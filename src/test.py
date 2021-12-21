@@ -4,6 +4,7 @@
 
 from CSP import *
 from backtrack import *
+from arc_consistency import ac3
 
 
 
@@ -38,7 +39,7 @@ if __name__ == "__main__":
     # test 2-coloration with C_4
     print("\n\n\n 2-Coloration on C_4 \n\n")
     csp_solver = CSP()
-    csp_solver.add_variable("x11", 1, 2)
+    csp_solver.add_variable("x11", 2, 2)
     csp_solver.add_variable("x12", 1, 2)
     csp_solver.add_variable("x21", 1, 2)
     csp_solver.add_variable("x22", 1, 2)
@@ -49,6 +50,16 @@ if __name__ == "__main__":
     csp_solver.add_constraint(3, 2, constrFun1) # x22 != x21
 
     csp_solver.display()
+
+    print("before AC3")
+    for var in csp_solver.vars:
+        print(var.name, var.domEnum)
+
+    ac3(csp_solver)
+
+    print("After AC3")
+    for var in csp_solver.vars:
+        print(var.name, var.domEnum)
 
     sol = dict()
     level = 0

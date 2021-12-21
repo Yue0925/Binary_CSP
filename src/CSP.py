@@ -50,6 +50,13 @@ class Constraint(object):
         """ Return True if the given assigned values are satisfied by current constraint, False otherwise. """
         return (value1, value2) in self.feasibleTuples
 
+    def reverse(self):
+        return Constraint(
+            id=-self.id,
+            var1=self.var2, var2=self.var1,
+            funCompatible=lambda a, b: self.is_feasible(b, a)
+        )
+
 
 
 """ Implementation of an integer Constraint Satisfaction Programming Solver. 

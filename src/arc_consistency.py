@@ -1,17 +1,29 @@
 def ac3(csp):
-    to_test = csp.constraints
+    constrs = []
+    for constr in csp.constrs:
+        constrs.append(constr)
+        constrs.append(constr.reverse())
 
+    to_test = constrs[:]
     while to_test:
+
         c_xy = to_test.pop()
-        x, y = c_xy.variables
+        x = c_xy.var1
+        y = c_xy.var2
 
-        for a in x.domain:
-            for b in y.domain:
+        values = x.domEnum.copy()
+        for a in values:
 
-                if not c_xy(a, b):
-                    x.remove(a)
+            supported = False
+            for b in y.domEnum:
+                if c_xy.is_feasible(a, b):
+                    supported = True
+                    break
 
-                    for c_zx in csp.constraints:
-                        if c_zx.variables[1] == x and c_zx.variables[0] != y:
-                            if c_zx not in to_test:
-                                to_test.append(c_zx)
+            if not supported:
+                x.domEnum.remove(a)
+
+                for c_zx in constrs:
+                    if c_zx.var2 == x and c_zx.var1 != y:
+                        if c_zx not in to_test:
+                            to_test.append(c_zx)
