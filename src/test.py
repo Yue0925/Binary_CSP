@@ -3,7 +3,7 @@
 
 
 from CSP import *
-from backtrack import *
+# from backtrack import *
 from arc_consistency import ac3
 
 
@@ -51,16 +51,14 @@ if __name__ == "__main__":
 
     csp_solver.display()
 
-    print("before AC3")
-    for var in csp_solver.vars:
-        print(var.name, var.domEnum)
+    # print("before AC3")
+    # for var in csp_solver.vars:
+    #     print(var.name, var.dom)
+    #
+    # ac3(csp_solver)
+    #
+    # print("After AC3")
+    # for var in csp_solver.vars:
+    #     print(var.name, var.dom)
 
-    ac3(csp_solver)
-
-    print("After AC3")
-    for var in csp_solver.vars:
-        print(var.name, var.domEnum)
-
-    sol = dict()
-    level = 0
-    backtracking(csp_solver, sol, level)
+    csp_solver.solve()
