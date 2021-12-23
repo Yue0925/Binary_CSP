@@ -1,12 +1,15 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-
+import random
+import numpy as np
 from CSP import *
 # from backtrack import *
 from arc_consistency import ac3
 
-
+seed = 7
+# random.seed(seed)
+# np.random.seed(seed)
 
 
 def constrFun1(v1:int, v2 : int):
@@ -53,12 +56,16 @@ if __name__ == "__main__":
 
     # print("before AC3")
     # for var in csp_solver.vars:
-    #     print(var.name, var.dom)
+    #     print(var.name, var._dom)
     #
     # ac3(csp_solver)
     #
     # print("After AC3")
     # for var in csp_solver.vars:
-    #     print(var.name, var.dom)
+    #     print(var.name, var._dom)
 
-    csp_solver.solve()
+    iter = 0
+    while iter < 1000 and csp_solver.solve():
+        print()
+        print()
+        iter += 1
