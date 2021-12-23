@@ -11,17 +11,17 @@ def ac3(csp):
         x = c_xy.var1
         y = c_xy.var2
 
-        values = x.dom.copy()
+        values = x.dom(0)
         for a in values:
 
             supported = False
-            for b in y.dom:
+            for b in y.dom(0):
                 if c_xy.is_feasible(a, b):
                     supported = True
                     break
 
             if not supported:
-                x.dom.remove(a)
+                x.remove_value(a, 0)
 
                 for c_zx in constrs:
                     if c_zx.var2 == x and c_zx.var1 != y:

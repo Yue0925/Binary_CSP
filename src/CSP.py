@@ -4,6 +4,7 @@
 import random
 import numpy as np
 
+
 VARIABLES_SELECTION = ["arbitrary"]  # d'autres possibilités à compléter
 VALUES_SELECTION = ["arbitrary"]  # d'autres possibilités à compléter
 
@@ -157,11 +158,16 @@ class CSP(object):
                 print("(", a, ", ", b, ")")
 
     def solve(self):
+        from backtrack import backtracking  # to avoid circular imports
+        from arc_consistency import ac3
+
+        # setup
         self.assignments = [None for _ in range(self.nbVars)]
         self.nb_assigned = 0
 
         for var in self.vars:
             var.last = (var.dom_size - 1) * np.ones(self.nbVars + 1, dtype=int)
-        
-        from backtrack import backtracking  # to avoid circular imports
+
+        # Actual solve
+        ac3(self)
         return backtracking(self, 0)
