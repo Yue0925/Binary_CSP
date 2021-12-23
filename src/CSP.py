@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 import random
-
+import numpy as np
 
 VARIABLES_SELECTION = ["arbitrary"]  # d'autres possibilités à compléter
 VALUES_SELECTION = ["arbitrary"]  # d'autres possibilités à compléter
@@ -19,10 +19,34 @@ class Variable(object):
 
         self.domMin = domMin
         self.domMax = domMax
-        self.dom = list(range(domMin, domMax + 1))  # domaine énumérée, l'ens élément finis
+        self._dom = list(range(domMin, domMax + 1))  # domaine énumérée, l'ens élément finis
+        self.dom_size = len(self._dom)
         # self.domFun = domFun # domaine définie par une fonction
         self.level = -1
         self.assigned = False
+
+        self.last = None
+
+    def __repr__(self):
+        return "variable {}".format(self.name)
+
+    def dom(self, level):
+        if level == -1:
+            return self._dom[:]
+        return self._dom[:self.last[level] + 1]
+
+    def remove_value(self, value, level):
+        last = self.last[level]
+        to_remove = -1
+        for i in range(last + 1):
+            if self._dom[i] == value:
+                to_remove = i
+                break
+        
+        if to_remove == -1:
+            raise ValueError("Value {} not found in variable {}'s domain at level {}".format(value, self.name, level))
+        self._dom[to_remove], self._dom[last] = self._dom[last], self._dom[to_remove]
+        self.last[level] -= 1
 
 
 class Constraint(object):
@@ -36,8 +60,8 @@ class Constraint(object):
         self.var2 = var2
 
         self.feasibleTuples = set()  # l'ensemble couples admissibles
-        for a in var1.dom:
-            for b in var2.dom:
+        for a in var1.dom(-1):
+            for b in var2.dom(-1):
                 if funCompatible is None:
                     self.feasibleTuples.add((a, b))
                 elif funCompatible(a, b):
@@ -76,6 +100,10 @@ class CSP(object):
         self.nbConstrs = len(constrs)
         self.constrs = constrs  # list of constraints
 
+        # Used for solving
+        self.assignments = None
+        self.nb_assigned = None
+
     def add_variable(self, name: str, domMin: int, domMax: int):
         """ Create and add a new variable to CSP. """
         self.vars.append(Variable(self.nbVars, name, domMin, domMax))
@@ -86,7 +114,7 @@ class CSP(object):
         self.constrs.append(Constraint(self.nbConstrs, self.vars[var1], self.vars[var2], funCompatible))
         self.nbConstrs += 1
 
-    def add_unairy_constraint(self, varId: int, subDom: list):
+    def add_unairy_constraint(self, varId: int, subDom: list):  # TODO: ne marche plus
         """ Add a domain constraint on variable varId. """
         for v in subDom:
             if v not in self.vars[varId].domEnum:
@@ -94,15 +122,13 @@ class CSP(object):
 
         self.vars[varId].dom = subDom
 
-    def select_varId_arbitrary(self, exception: list):
-        """ Select an unassigned variable arbitrarily, where 'exception' is the list of assigned variables' ids. """
-        if len(exception) == 0: return random.choice(range(self.nbVars))
-        listID = list(filter(lambda x: x not in exception, range(self.nbVars)))  # list of remaining vars' id
-        return random.choice(listID)
+    def select_unassigned_varId_arbitrary(self):
+        """ Select an unassigned variable arbitrarily. """
+        return random.choice([i for i in range(self.nbVars) if self.assignments[i] is None])
 
-    def select_arbitrary_value(self, varId: int):
+    def select_arbitrary_value(self, varId: int, level=-1):
         """ Given a variable, select a value arbitrarily. """
-        return random.choice(self.vars[varId].domEnum)
+        return random.choice(self.vars[varId].dom(level))
 
     def all_associated_constrs(self, varId: int):
         """ Return all constraints containing the given variable. """
@@ -131,5 +157,11 @@ class CSP(object):
                 print("(", a, ", ", b, ")")
 
     def solve(self):
+        self.assignments = [None for _ in range(self.nbVars)]
+        self.nb_assigned = 0
+
+        for var in self.vars:
+            var.last = (var.dom_size - 1) * np.ones(self.nbVars + 1, dtype=int)
+        
         from backtrack import backtracking  # to avoid circular imports
-        return backtracking(self, {}, 0)
+        return backtracking(self, 0)
