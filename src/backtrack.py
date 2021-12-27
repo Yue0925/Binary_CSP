@@ -21,6 +21,8 @@ def backtracking(csp: CSP.CSP, level: int):
     if csp.nb_assigned == csp.nbVars:
         return True
 
+    csp.exploredNodes += 1 # arrived at a new node
+
     # Propagate domain updates to (potential) children nodes
     for var_to_update in csp.vars:
         var_to_update.last[level + 1] = var_to_update.last[level]
