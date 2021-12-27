@@ -18,26 +18,6 @@ def constrFun1(v1:int, v2 : int):
 
 if __name__ == "__main__":
     print(" test.py ! ")
-    """
-    myCSP = CSP()
-
-    myCSP.add_variable(
-        "var1",
-        0,
-        1)
-
-    myCSP.add_variable(
-        "var2",
-        0,
-        1
-    )
-
-    myCSP.add_constraint(0, 1)
-
-    myCSP.display()
-    """
-    
-
 
     # test 2-coloration with C_4
     print("\n\n\n 2-Coloration on C_4 \n\n")
@@ -53,7 +33,9 @@ if __name__ == "__main__":
     csp_solver.add_constraint(3, 2, constrFun1) # x22 != x21
 
     csp_solver.display()
-    csp_solver.set_variable_selection(2)
+    
+    csp_solver.set_variable_selection(0)
+    csp_solver.set_value_selection(3)
 
     # print("before AC3")
     # for var in csp_solver.vars:

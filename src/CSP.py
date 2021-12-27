@@ -6,7 +6,7 @@ import numpy as np
 
 
 VARIABLES_SELECTION = ["arbitrary", "smallest_domain", "most_constrained", "dom_over_constr"]
-VALUES_SELECTION = ["arbitrary"]  # d'autres possibilités à compléter
+VALUES_SELECTION = ["arbitrary", "ascending", "descending", "most_supported"]
 
 
 class Variable(object):
@@ -99,8 +99,10 @@ class CSP(object):
         self.nbConstrs = len(constrs)
         self.constrs = constrs  # list of constraints
 
-        self.matrixIncident = None # mat[var1][var2] = True, if var1 and var2 are linked by a constraint
-        self.param = dict()
+        self.matrixIncident = None # matrixIncident[var1][var2] = True, if var1 and var2 are linked by a constraint
+        self.supportedValCount = None
+
+        self.param = dict() # parameters settings
         self.__init_parameters()
 
         # Used for solving
@@ -119,14 +121,24 @@ class CSP(object):
     def set_value_selection(self, selection=0):
         if selection<0 or selection> len(VALUES_SELECTION)-1:
             raise ValueError("The argument value selection setting {} is invalid.".format(selection))
-        self.param.update({"value" : VALUES_SELECTION[selection]})  
+        self.param.update({"value" : VALUES_SELECTION[selection]})
     
-    def __init_matrix_incidency(self):
+    def __init_matrix_incidency_supported_values_counter(self):
         """ Initialize a binary incidency matirx that mat[var1][var2] = True, if var1 and var2 are linked with a constraint. """
-        self.matrixIncident = [[False for _ in range(self.nbVars)] for _ in range(self.nbVars)]
+        self.matrixIncident = [[False for _ in range(self.nbVars)] for _ in range(self.nbVars)] 
+        self.supportedValCount = [{val : 0 for val in self.vars[id].dom(-1)} for id in range(self.nbVars)]
+        
         for c in self.constrs:
             self.matrixIncident[c.var1.id][c.var2.id] = True
             self.matrixIncident[c.var2.id][c.var1.id] = True
+            for a in c.var1.dom(0):
+                for b in c.var2.dom(0):
+                    if c.is_feasible(a, b):
+                        nb = self.supportedValCount[c.var1.id][a]
+                        self.supportedValCount[c.var1.id].update({a : nb+1})
+                        nb = self.supportedValCount[c.var2.id][b]
+                        self.supportedValCount[c.var2.id].update({b : nb+1})
+
     
     def __count_related_constraints(self, id: int):
         """ Return the number of constraints containing the given variable. """
@@ -198,9 +210,38 @@ class CSP(object):
             return random.choice(isolated)
         else: return id
 
-    def select_arbitrary_value(self, varId: int, level=-1):
-        """ Given a variable, select a value arbitrarily. """
-        return random.choice(self.vars[varId].dom(level))
+    def select_values(self, varId: int, level=-1):
+        if self.param["value"] == VALUES_SELECTION[0]:
+            return self.__select_values_arbitrary(varId, level)
+        if self.param["value"] == VALUES_SELECTION[1]:
+            return self.__select_values_in_ascending_order(varId, level)
+        if self.param["value"] == VALUES_SELECTION[2]:
+            return self.__select_values_in_descending_order(varId, level)
+        if self.param["value"] == VALUES_SELECTION[3]:
+            return self.__select_values_most_supported_order(varId, level)
+        raise ValueError("Value selection parameter error : {}.".format(self.param["value"]))
+
+    def __select_values_arbitrary(self, varId: int, level=-1):
+        """ Select values arbitrarily. """
+        values_order = self.vars[varId].dom(level)[:]
+        np.random.shuffle(values_order)
+        return values_order
+    
+    def __select_values_in_ascending_order(self, varId: int, level=-1):
+        """ Select values in ascending order. """
+        values_order = sorted(self.vars[varId].dom(level))
+        return values_order
+
+    def __select_values_in_descending_order(self, varId: int, level=-1):
+        """ Select values in descending order. """
+        values_order = sorted(self.vars[varId].dom(level), reverse=True)
+        return values_order
+
+    def __select_values_most_supported_order(self, varId: int, level=-1):
+        """ Select values most supported. """
+        return list(filter(lambda val : val in self.vars[varId].dom(level), 
+                sorted(self.supportedValCount[varId].keys(), 
+                    key=lambda x: self.supportedValCount[varId][x], reverse= True)))
 
     def all_associated_constrs(self, varId: int):
         """ Return all constraints containing the given variable. """
@@ -215,9 +256,6 @@ class CSP(object):
             lambda c: c.var1.assigned and c.var2.assigned,
             self.all_associated_constrs(varId)
         ))
-
-    def is_feasible(self):
-        pass
 
     def vars_allDiff(self):
         pass
@@ -242,6 +280,7 @@ class CSP(object):
         # Actual solve
         ac3(self)
 
-        self.__init_matrix_incidency()
+        self.__init_matrix_incidency_supported_values_counter()
+        #print("supportedValCount : {}. ".format(self.supportedValCount))
 
         return backtracking(self, 0)

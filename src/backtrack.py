@@ -1,8 +1,6 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-import numpy as np
-
 import CSP
 
 
@@ -35,8 +33,7 @@ def backtracking(csp: CSP.CSP, level: int):
     csp.nb_assigned += 1
 
     # try values affections
-    values_order = var.dom(level)
-    np.random.shuffle(values_order)
+    values_order = csp.select_values(varId, level)
     for value in values_order:
         csp.assignments[varId] = value
 
