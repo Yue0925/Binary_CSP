@@ -3,6 +3,7 @@
 
 import random
 import numpy as np
+import time
 
 
 VARIABLES_SELECTION = ["arbitrary", "smallest_domain", "most_constrained", "dom_over_constr"]
@@ -63,7 +64,7 @@ class Constraint(object):
             for b in var2.dom(-1):
                 if funCompatible is None:
                     self.feasibleTuples.add((a, b))
-                elif funCompatible(a, b):
+                elif funCompatible(var1.id, var2.id, a, b):
                     self.feasibleTuples.add((a, b))
 
     def __repr__(self):
@@ -77,7 +78,7 @@ class Constraint(object):
         return Constraint(
             id=-self.id,
             var1=self.var2, var2=self.var1,
-            funCompatible=lambda a, b: self.is_feasible(b, a)
+            funCompatible=lambda x, y, a, b: self.is_feasible(b, a)
         )
 
 
@@ -108,6 +109,9 @@ class CSP(object):
         # Used for solving
         self.assignments = None
         self.nb_assigned = None
+        self.exploredNodes = 0
+        self.exploreTime = 0
+        self.isFeasible = False
     
     def __init_parameters(self):
         self.param["variable"] = None
@@ -283,4 +287,11 @@ class CSP(object):
         self.__init_matrix_incidency_supported_values_counter()
         #print("supportedValCount : {}. ".format(self.supportedValCount))
 
-        return backtracking(self, 0)
+        start = time.time()
+
+        self.isFeasible = backtracking(self, 0)
+
+        end = time.time()
+        self.exploreTime = end - start
+        
+        return self.isFeasible
