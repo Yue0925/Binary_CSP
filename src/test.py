@@ -53,6 +53,7 @@ if __name__ == "__main__":
     csp_solver.add_constraint(3, 2, constrFun1) # x22 != x21
 
     csp_solver.display()
+    csp_solver.set_variable_selection(2)
 
     # print("before AC3")
     # for var in csp_solver.vars:

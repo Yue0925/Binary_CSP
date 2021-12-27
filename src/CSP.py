@@ -5,7 +5,7 @@ import random
 import numpy as np
 
 
-VARIABLES_SELECTION = ["arbitrary"]  # d'autres possibilités à compléter
+VARIABLES_SELECTION = ["arbitrary", "smallest_domain", "most_constrained", "dom_over_constr"]
 VALUES_SELECTION = ["arbitrary"]  # d'autres possibilités à compléter
 
 
@@ -24,8 +24,6 @@ class Variable(object):
         self.dom_size = len(self._dom)
         # self.domFun = domFun # domaine définie par une fonction
         self.level = -1
-        self.assigned = False
-
         self.last = None
 
     def __repr__(self):
@@ -101,9 +99,38 @@ class CSP(object):
         self.nbConstrs = len(constrs)
         self.constrs = constrs  # list of constraints
 
+        self.matrixIncident = None # mat[var1][var2] = True, if var1 and var2 are linked by a constraint
+        self.param = dict()
+        self.__init_parameters()
+
         # Used for solving
         self.assignments = None
         self.nb_assigned = None
+    
+    def __init_parameters(self):
+        self.param["variable"] = None
+        self.param["value"] = None
+    
+    def set_variable_selection(self, selection=0):
+        if selection<0 or selection> len(VARIABLES_SELECTION)-1:
+            raise ValueError("The argument variable selection setting {} is invalid.".format(selection))
+        self.param.update({"variable" : VARIABLES_SELECTION[selection]})
+    
+    def set_value_selection(self, selection=0):
+        if selection<0 or selection> len(VALUES_SELECTION)-1:
+            raise ValueError("The argument value selection setting {} is invalid.".format(selection))
+        self.param.update({"value" : VALUES_SELECTION[selection]})  
+    
+    def __init_matrix_incidency(self):
+        """ Initialize a binary incidency matirx that mat[var1][var2] = True, if var1 and var2 are linked with a constraint. """
+        self.matrixIncident = [[False for _ in range(self.nbVars)] for _ in range(self.nbVars)]
+        for c in self.constrs:
+            self.matrixIncident[c.var1.id][c.var2.id] = True
+            self.matrixIncident[c.var2.id][c.var1.id] = True
+    
+    def __count_related_constraints(self, id: int):
+        """ Return the number of constraints containing the given variable. """
+        return sum(self.matrixIncident[id])
 
     def add_variable(self, name: str, domMin: int, domMax: int):
         """ Create and add a new variable to CSP. """
@@ -115,17 +142,61 @@ class CSP(object):
         self.constrs.append(Constraint(self.nbConstrs, self.vars[var1], self.vars[var2], funCompatible))
         self.nbConstrs += 1
 
-    def add_unairy_constraint(self, varId: int, subDom: list):  # TODO: ne marche plus
-        """ Add a domain constraint on variable varId. """
-        for v in subDom:
-            if v not in self.vars[varId].domEnum:
-                print("ERROR : ", v, "not compatible ! ")
+    def select_unassigned_varId(self, level=-1):
+        if self.param["variable"] == VARIABLES_SELECTION[0]:
+            return self.__select_unassigned_varId_arbitrary()
+        if self.param["variable"] == VARIABLES_SELECTION[1]:
+            return self.__select_unassigned_varId_smallest_dom(level)
+        if self.param["variable"] == VARIABLES_SELECTION[2]:
+            return self.__select_unassigned_varId_most_constr()
+        if self.param["variable"] == VARIABLES_SELECTION[3]:
+            return self.__select_unassigned_varId_dom_over_constr(level)
+        raise ValueError("Variable selection parameter error : {}.".format(self.param["variable"]))
 
-        self.vars[varId].dom = subDom
-
-    def select_unassigned_varId_arbitrary(self):
+    def __select_unassigned_varId_arbitrary(self):
         """ Select an unassigned variable arbitrarily. """
         return random.choice([i for i in range(self.nbVars) if self.assignments[i] is None])
+
+    def __select_unassigned_varId_smallest_dom(self, level=-1):
+        """ Select the unassigned variable with smallest domain. """
+        id = -1
+        domLastIndex = float('inf')
+        for i in range(self.nbVars):
+            if self.assignments[i] is None and self.vars[i].last[level] < domLastIndex:
+                id = i
+                domLastIndex = self.vars[i].last[level]
+        if id<0 or domLastIndex<0:
+            raise ValueError("Selected variable at level {} is {} and its domain cardinality equals {}.".format(
+                level, id, domLastIndex+1))
+        return id
+    
+    def __select_unassigned_varId_most_constr(self):
+        """ Select the most constrained unassigned variable. """
+        id = -1
+        nbConstr = -1
+        for i in range(self.nbVars):
+            if self.assignments[i] is None and self.__count_related_constraints(i) > nbConstr:
+                nbConstr = self.__count_related_constraints(i)
+                id = i
+        return id
+    
+    def __select_unassigned_varId_dom_over_constr(self, level=-1):
+        """ To select the variable leading to a contradiction rapidly, return the variable
+            with the smallest ratio |dom|/|constr|. """
+        id = -1
+        ratio = float('inf')
+        candidates = [i for i in range(self.nbVars) if self.assignments[i] is None]
+        isolated = list() # variables have no constraint
+        for i in candidates:
+            cardConstr = self.__count_related_constraints(i)
+            if cardConstr == 0:
+                isolated.append(i)
+            elif ((self.vars[i].last[level]+1)/cardConstr) < ratio:
+                ratio = (self.vars[i].last[level]+1)/cardConstr
+                id = i
+        if id<0:
+            return random.choice(isolated)
+        else: return id
 
     def select_arbitrary_value(self, varId: int, level=-1):
         """ Given a variable, select a value arbitrarily. """
@@ -170,4 +241,7 @@ class CSP(object):
 
         # Actual solve
         ac3(self)
+
+        self.__init_matrix_incidency()
+
         return backtracking(self, 0)
