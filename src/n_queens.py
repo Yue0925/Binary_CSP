@@ -12,7 +12,7 @@ def display_sol_nqueens(csp: CSP, N: int):
 
     print("\n \nSolution of {}-Queens problem : ".format(N))
     for i in range(N):
-        for j in range(N):
+        for j in range(1, N + 1):
             if csp.assignments[i] == j: 
                 print('Q ', end='')
             else:
