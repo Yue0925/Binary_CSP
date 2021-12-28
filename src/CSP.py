@@ -5,135 +5,12 @@ import random
 import numpy as np
 import time
 
+from constraint import Constraint, ConstraintLinear, ConstraintEnum
+from variable import Variable
+
 
 VARIABLES_SELECTION = ["arbitrary", "smallest_domain", "most_constrained", "dom_over_constr"]
 VALUES_SELECTION = ["arbitrary", "ascending", "descending", "most_supported"]
-
-
-class Variable(object):
-    """ Implementation of a variable object. For the sake of simplicity, all attributes are public.
-    """
-
-    def __init__(self, id: int, name: str, domMin: int, domMax: int):  # , domFun):
-        """ Initialize a variable."""
-        self.id = id
-        self.name = name  # facultatif
-
-        self.domMin = domMin
-        self.domMax = domMax
-        self._dom = list(range(domMin, domMax + 1))  # domaine énumérée, l'ens élément finis
-        self.dom_size = len(self._dom)
-        # self.domFun = domFun # domaine définie par une fonction
-        self.level = -1
-        self.current_dom_size = None
-
-    def __repr__(self):
-        return "variable {}".format(self.name)
-
-    def dom(self, level: int = -1):
-        """Returns the domain of the variable for the specified depth level during backtrack search
-
-        Args:
-            level (int): Depth level (on the current branch). If level=-1, returns the initial domain of the variable.
-
-        Returns:
-            (list): list of all remaining possible values at given level
-        """
-        if level == -1:
-            return self._dom[:]
-        return self._dom[:self.current_dom_size[level]]
-
-    def remove_value(self, value, level):
-        last = self.current_dom_size[level] - 1
-        to_remove = -1
-        for i in range(last + 1):
-            if self._dom[i] == value:
-                to_remove = i
-                break
-        
-        if to_remove == -1:
-            raise ValueError("Value {} not found in variable {}'s domain at level {}".format(value, self.name, level))
-        self._dom[to_remove], self._dom[last] = self._dom[last], self._dom[to_remove]
-        self.current_dom_size[level] -= 1
-
-
-class Constraint(object):
-    """ Implementation of a constraint object. For the sake of simplicity, all attributes are public.
-    """
-
-    def __init__(self, id: int, var1: Variable, var2: Variable, funCompatible=None):
-        """ Initialize a constraint."""
-        self.id = id
-        self.var1 = var1
-        self.var2 = var2
-
-        self.feasibleTuples = set()  # l'ensemble couples admissibles
-        for a in var1.dom(-1):
-            for b in var2.dom(-1):
-                if funCompatible is None:
-                    self.feasibleTuples.add((a, b))
-                elif funCompatible(var1.id, var2.id, a, b):
-                    self.feasibleTuples.add((a, b))
-
-    def __repr__(self):
-        return "constraint {0} : ({1}, {2})".format(self.id, self.var1.name, self.var2.name)
-
-    def is_feasible(self, value1: int, value2: int):
-        """ Return True if the given assigned values are satisfied by current constraint, False otherwise. """
-        return (value1, value2) in self.feasibleTuples
-
-    def reverse(self):
-        """Returns a copied constraint where first and second variable roles are inversed
-
-        Returns:
-            (Constraint): the reversed constraint
-        """
-        return Constraint(
-            id=-self.id,
-            var1=self.var2, var2=self.var1,
-            funCompatible=lambda x, y, a, b: self.is_feasible(b, a)
-        )
-
-    def propagate_assignment(self, assigned_var, assignments, level):
-        """After one of its constraints was assigned a value, eliminated infeasible values from the second one's domain
-
-        Args:
-            assigned_var (Variable): The variable which was assigned a value during backtracking
-            assignments (list): Link between a variable's id and its assigned value
-            level (int): Depth on the current branch in backtracking
-
-        Returns:
-            (bool): True if the constraint is still feasible after reducing the second variable's domain, False otherwise
-        """
-        if assigned_var == self.var1:
-            var_to_check = self.var2
-        elif assigned_var == self.var2:
-            var_to_check = self.var1
-        else:
-            raise ValueError("Variable {} not in constraint {} (should be {} or {})".format(
-                    assigned_var.name, self.id, self.var1.name, self.var2.name
-                ))
-
-        if assignments[assigned_var.id] is None:
-            raise ValueError("Variable {} should have an assigned value".format(assigned_var.name))
-
-        contradiction = False
-
-        if assignments[var_to_check.id] is None:
-            for value in var_to_check.dom(level):
-
-                assignments[var_to_check.id] = value
-                feasible = self.is_feasible(assignments[self.var1.id], assignments[self.var2.id])
-                assignments[var_to_check.id] = None
-
-                if not feasible:
-                    var_to_check.remove_value(value, level + 1)
-
-                    if var_to_check.current_dom_size[level + 1] == 0:
-                        contradiction = True
-                        break
-                        
-        return not contradiction
 
 
 class CSP(object):
@@ -211,9 +88,14 @@ class CSP(object):
         self.vars.append(Variable(self.nbVars, name, domMin, domMax))
         self.nbVars += 1
 
-    def add_constraint(self, var1: int, var2: int, funCompatible=None):
-        """ Create and add a new constraint to CSP. """
-        self.constrs.append(Constraint(self.nbConstrs, self.vars[var1], self.vars[var2], funCompatible))
+    def add_constraint_enum(self, var1: int, var2: int, funCompatible=None):
+        """ Create and add a new enumeration constraint to CSP. """
+        self.constrs.append(ConstraintEnum(self.nbConstrs, self.vars[var1], self.vars[var2], funCompatible))
+        self.nbConstrs += 1
+
+    def add_constraint(self, constr):
+        constr.id = self.nbConstrs
+        self.constrs.append(constr)
         self.nbConstrs += 1
 
     def select_unassigned_varId(self, level=-1):
@@ -329,8 +211,8 @@ class CSP(object):
     def display(self):
         for c in self.constrs:
             print(c)
-            for (a, b) in c.feasibleTuples:
-                print("(", a, ", ", b, ")")
+            # for (a, b) in c.feasibleTuples:  # TODO: ne marche pas pour les contraintes lineaires
+            #     print("(", a, ", ", b, ")")
 
     def solve(self):
         """Solves the CSP with a backtracking algorithm. Final variable values are stored in self.assignments.
