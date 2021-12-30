@@ -5,81 +5,12 @@ import random
 import numpy as np
 import time
 
+from constraint import Constraint, ConstraintLinear, ConstraintEnum
+from variable import Variable
+
 
 VARIABLES_SELECTION = ["arbitrary", "smallest_domain", "most_constrained", "dom_over_constr"]
 VALUES_SELECTION = ["arbitrary", "ascending", "descending", "most_supported"]
-
-
-class Variable(object):
-    """ Implementation of a variable object. For the sake of simplicity, all attributes are public.
-    """
-
-    def __init__(self, id: int, name: str, domMin: int, domMax: int):  # , domFun):
-        """ Initialize a variable."""
-        self.id = id
-        self.name = name  # facultatif
-
-        self.domMin = domMin
-        self.domMax = domMax
-        self._dom = list(range(domMin, domMax + 1))  # domaine énumérée, l'ens élément finis
-        self.dom_size = len(self._dom)
-        # self.domFun = domFun # domaine définie par une fonction
-        self.level = -1
-        self.last = None
-
-    def __repr__(self):
-        return "variable {}".format(self.name)
-
-    def dom(self, level):
-        if level == -1:
-            return self._dom[:]
-        return self._dom[:self.last[level] + 1]
-
-    def remove_value(self, value, level):
-        last = self.last[level]
-        to_remove = -1
-        for i in range(last + 1):
-            if self._dom[i] == value:
-                to_remove = i
-                break
-        
-        if to_remove == -1:
-            raise ValueError("Value {} not found in variable {}'s domain at level {}".format(value, self.name, level))
-        self._dom[to_remove], self._dom[last] = self._dom[last], self._dom[to_remove]
-        self.last[level] -= 1
-
-
-class Constraint(object):
-    """ Implementation of a constraint object. For the sake of simplicity, all attributes are public.
-    """
-
-    def __init__(self, id: int, var1: Variable, var2: Variable, funCompatible=None):
-        """ Initialize a constraint."""
-        self.id = id
-        self.var1 = var1
-        self.var2 = var2
-
-        self.feasibleTuples = set()  # l'ensemble couples admissibles
-        for a in var1.dom(-1):
-            for b in var2.dom(-1):
-                if funCompatible is None:
-                    self.feasibleTuples.add((a, b))
-                elif funCompatible(var1.id, var2.id, a, b):
-                    self.feasibleTuples.add((a, b))
-
-    def __repr__(self):
-        return "constraint {0} : ({1}, {2})".format(self.id, self.var1.name, self.var2.name)
-
-    def is_feasible(self, value1: int, value2: int):
-        """ Return True if the given assigned values are satisfied by current constraint, False otherwise. """
-        return (value1, value2) in self.feasibleTuples
-
-    def reverse(self):
-        return Constraint(
-            id=-self.id,
-            var1=self.var2, var2=self.var1,
-            funCompatible=lambda x, y, a, b: self.is_feasible(b, a)
-        )
 
 
 class CSP(object):
@@ -88,7 +19,12 @@ class CSP(object):
     """
 
     def __init__(self, vars=None, constrs=None):
-        """ Initialize a CSP."""
+        """Initialize a CSP.
+
+        Args:
+            vars (list of Variable): lis of problem's variables
+            constrs (list of Constraint): list of problem's constraints
+        """
         if vars is None:
             vars = []
         if constrs is None:
@@ -142,7 +78,6 @@ class CSP(object):
                         self.supportedValCount[c.var1.id].update({a : nb+1})
                         nb = self.supportedValCount[c.var2.id][b]
                         self.supportedValCount[c.var2.id].update({b : nb+1})
-
     
     def __count_related_constraints(self, id: int):
         """ Return the number of constraints containing the given variable. """
@@ -153,9 +88,14 @@ class CSP(object):
         self.vars.append(Variable(self.nbVars, name, domMin, domMax))
         self.nbVars += 1
 
-    def add_constraint(self, var1: int, var2: int, funCompatible=None):
-        """ Create and add a new constraint to CSP. """
-        self.constrs.append(Constraint(self.nbConstrs, self.vars[var1], self.vars[var2], funCompatible))
+    def add_constraint_enum(self, var1: int, var2: int, funCompatible=None):
+        """ Create and add a new enumeration constraint to CSP. """
+        self.constrs.append(ConstraintEnum(self.nbConstrs, self.vars[var1], self.vars[var2], funCompatible))
+        self.nbConstrs += 1
+
+    def add_constraint(self, constr):
+        constr.id = self.nbConstrs
+        self.constrs.append(constr)
         self.nbConstrs += 1
 
     def select_unassigned_varId(self, level=-1):
@@ -176,14 +116,17 @@ class CSP(object):
     def __select_unassigned_varId_smallest_dom(self, level=-1):
         """ Select the unassigned variable with smallest domain. """
         id = -1
-        domLastIndex = float('inf')
+        min_dom_size = float('inf')
         for i in range(self.nbVars):
-            if self.assignments[i] is None and self.vars[i].last[level] < domLastIndex:
+            if self.assignments[i] is None and self.vars[i].current_dom_size[level] < min_dom_size:
                 id = i
-                domLastIndex = self.vars[i].last[level]
-        if id<0 or domLastIndex<0:
+                min_dom_size = self.vars[i].current_dom_size[level]
+
+        if id < 0 or min_dom_size <= 0:
             raise ValueError("Selected variable at level {} is {} and its domain cardinality equals {}.".format(
-                level, id, domLastIndex+1))
+                level, id, min_dom_size
+            ))
+
         return id
     
     def __select_unassigned_varId_most_constr(self):
@@ -202,17 +145,18 @@ class CSP(object):
         id = -1
         ratio = float('inf')
         candidates = [i for i in range(self.nbVars) if self.assignments[i] is None]
-        isolated = list() # variables have no constraint
+        isolated = list()  # variables have no constraint
         for i in candidates:
             cardConstr = self.__count_related_constraints(i)
             if cardConstr == 0:
                 isolated.append(i)
-            elif ((self.vars[i].last[level]+1)/cardConstr) < ratio:
-                ratio = (self.vars[i].last[level]+1)/cardConstr
+            elif (self.vars[i].current_dom_size[level] / cardConstr) < ratio:
+                ratio = (self.vars[i].current_dom_size[level]) / cardConstr
                 id = i
-        if id<0:
+        if id < 0:
             return random.choice(isolated)
-        else: return id
+        else:
+            return id
 
     def select_values(self, varId: int, level=-1):
         if self.param["value"] == VALUES_SELECTION[0]:
@@ -267,10 +211,15 @@ class CSP(object):
     def display(self):
         for c in self.constrs:
             print(c)
-            for (a, b) in c.feasibleTuples:
-                print("(", a, ", ", b, ")")
+            # for (a, b) in c.feasibleTuples:  # TODO: ne marche pas pour les contraintes lineaires
+            #     print("(", a, ", ", b, ")")
 
     def solve(self):
+        """Solves the CSP with a backtracking algorithm. Final variable values are stored in self.assignments.
+
+        Returns:
+            (bool): True if the CSP admits at least one feasible solution, False otherwise.
+        """
         from backtrack import backtracking  # to avoid circular imports
         from arc_consistency import ac3
 
@@ -279,7 +228,7 @@ class CSP(object):
         self.nb_assigned = 0
 
         for var in self.vars:
-            var.last = (var.dom_size - 1) * np.ones(self.nbVars + 1, dtype=int)
+            var.current_dom_size = var.dom_size * np.ones(self.nbVars + 1, dtype=int)
 
         # Actual solve
         ac3(self)

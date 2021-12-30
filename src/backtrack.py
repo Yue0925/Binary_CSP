@@ -5,13 +5,18 @@ import CSP
 
 
 def backtracking(csp: CSP.CSP, level: int):
-    """ A deep first backtracking algorithm.
+    """A depth first backtracking algorithm.
 
     Args:
         csp (CSP.CSP): a CSP solver
-        assignments (dict): variable's id => affected value
         level (int) : actual level in tree
+
+    Returns:
+        (bool): True if the partial assignment (stored in csp) is feasible, False otherwise
     """
+    if csp.assignments is None:
+        raise AttributeError("Missing partial assignment : csp.assignments has not been initialized")
+
     print("level =", level, "assignments : ")
     for var in csp.vars:
         v = csp.assignments[var.id]
@@ -21,11 +26,11 @@ def backtracking(csp: CSP.CSP, level: int):
     if csp.nb_assigned == csp.nbVars:
         return True
 
-    csp.exploredNodes += 1 # arrived at a new node
+    csp.exploredNodes += 1  # arrived at a new node
 
     # Propagate domain updates to (potential) children nodes
     for var_to_update in csp.vars:
-        var_to_update.last[level + 1] = var_to_update.last[level]
+        var_to_update.current_dom_size[level + 1] = var_to_update.current_dom_size[level]
 
     # pick up a variable
     varId = csp.select_unassigned_varId(level)
@@ -42,44 +47,22 @@ def backtracking(csp: CSP.CSP, level: int):
         # Forward-checking
         contradiction = False
         for c in csp.all_associated_constrs(varId):
-            if var == c.var1:
-                var_to_check = c.var2
-                first = False
-            else:
-                var_to_check = c.var1
-                first = True
-
-            if csp.assignments[var_to_check.id] is None:
-
-                values_to_check = var_to_check.dom(level)
-                for b in values_to_check:
-                    if first:
-                        feasible = c.is_feasible(b, value)
-                    else:
-                        feasible = c.is_feasible(value, b)
-
-                    if not feasible:
-                        var_to_check.remove_value(b, level + 1)
-                        if var_to_check.last[level + 1] == -1:
-                            contradiction = True
-                            break
-
-            # else:  # var_to_check is assigned  # TODO : pas necessaire (?)
-            #     if not c.is_feasible(csp.assignments[c.var1.id], csp.assignments[c.var2.id]):
-            #         contradiction = True
-
+            contradiction = not c.propagate_assignment(var, csp.assignments, level)
+            # contradiction = True if constraint c cannot be verified for current assignment
             if contradiction:
                 break
 
         if not contradiction:
             if backtracking(csp, level + 1):
                 return True
+            # else contradiction found further down the tree, so try another value
             print("backtracking from value {} for variable {}".format(csp.assignments[varId], var.name))
 
-        # Reset domains as we're trying a different value
+        # A contradiction was found, reset domains and try a different value
         for var_to_update in csp.vars:
-            var_to_update.last[level + 1] = var_to_update.last[level]
+            var_to_update.current_dom_size[level + 1] = var_to_update.current_dom_size[level]
 
+    # All values for selected variable lead to a contradiction, current partial assignment is not feasible
     var.level = -1
     csp.assignments[varId] = None
     csp.nb_assigned -= 1

@@ -1,4 +1,12 @@
 def ac3(csp):
+    """Removes all arc-inconsistent values for each variable of a csp
+
+    Args:
+        csp (CSP.CSP): A CSP solver
+
+    Returns:
+
+    """
     constrs = []
     for constr in csp.constrs:
         constrs.append(constr)

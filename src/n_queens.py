@@ -12,7 +12,7 @@ def display_sol_nqueens(csp: CSP, N: int):
 
     print("\n \nSolution of {}-Queens problem : ".format(N))
     for i in range(N):
-        for j in range(N):
+        for j in range(1, N + 1):
             if csp.assignments[i] == j: 
                 print('Q ', end='')
             else:
@@ -37,7 +37,7 @@ def solve_nqueens(N: int):
     # constraints, for every two distinct queens
     for i in range(N-1):
         for j in range(i+1, N):
-            csp_solver.add_constraint(i, j, constr_nqueens)
+            csp_solver.add_constraint_enum(i, j, constr_nqueens)
     
     csp_solver.display()
 
