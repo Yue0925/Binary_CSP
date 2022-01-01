@@ -1,5 +1,5 @@
 import numbers
-import constraint
+import Constraint
 
 
 class Variable(object):
@@ -23,7 +23,7 @@ class Variable(object):
         return "variable {}".format(self.name)
 
     def dom(self, level: int = -1):
-        """Returns the domain of the variable for the specified depth level during backtrack search
+        """Return the domain of the variable for the specified depth level during backtrack search
 
         Args:
             level (int): Depth level (on the current branch). If level=-1, returns the initial domain of the variable.
@@ -35,7 +35,8 @@ class Variable(object):
             return self._dom[:]
         return self._dom[:self.current_dom_size[level]]
 
-    def remove_value(self, value, level):
+    def remove_value(self, value:int, level:int):
+        """ Remove the given value from the domain at actual level of research tree"""
         last = self.current_dom_size[level] - 1
         to_remove = -1
         for i in range(last + 1):
@@ -140,7 +141,7 @@ class LinearExpr(object):
 
     def __eq__(self, other):
         expr = self - other
-        return constraint.ConstraintLinear(
+        return Constraint.ConstraintLinear(
             id=-1,
             var1=expr.var1, var2=expr.var2,
             coef1=expr.coef1, coef2=expr.coef2, rhs=-expr.constant,
@@ -149,7 +150,7 @@ class LinearExpr(object):
 
     def __ne__(self, other):
         expr = self - other
-        return constraint.ConstraintLinear(
+        return Constraint.ConstraintLinear(
             id=-1,
             var1=expr.var1, var2=expr.var2,
             coef1=expr.coef1, coef2=expr.coef2, rhs=-expr.constant,
@@ -158,7 +159,7 @@ class LinearExpr(object):
 
     def __lt__(self, other):
         expr = self - other
-        return constraint.ConstraintLinear(
+        return Constraint.ConstraintLinear(
             id=-1,
             var1=expr.var1, var2=expr.var2,
             coef1=expr.coef1, coef2=expr.coef2, rhs=-expr.constant,
@@ -167,7 +168,7 @@ class LinearExpr(object):
 
     def __le__(self, other):
         expr = self - other
-        return constraint.ConstraintLinear(
+        return Constraint.ConstraintLinear(
             id=-1,
             var1=expr.var1, var2=expr.var2,
             coef1=expr.coef1, coef2=expr.coef2, rhs=-expr.constant,
@@ -176,7 +177,7 @@ class LinearExpr(object):
 
     def __gt__(self, other):
         expr = self - other
-        return constraint.ConstraintLinear(
+        return Constraint.ConstraintLinear(
             id=-1,
             var1=expr.var1, var2=expr.var2,
             coef1=expr.coef1, coef2=expr.coef2, rhs=-expr.constant,
@@ -185,7 +186,7 @@ class LinearExpr(object):
 
     def __ge__(self, other):
         expr = self - other
-        return constraint.ConstraintLinear(
+        return Constraint.ConstraintLinear(
             id=-1,
             var1=expr.var1, var2=expr.var2,
             coef1=expr.coef1, coef2=expr.coef2, rhs=-expr.constant,

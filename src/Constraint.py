@@ -1,11 +1,11 @@
-import variable
+import Variable
 
 
 class Constraint(object):
     """ Implementation of a binary constraint object. For the sake of simplicity, all attributes are public.
     """
 
-    def __init__(self, id, var1, var2):
+    def __init__(self, id: int, var1:Variable.Variable, var2:Variable.Variable):
         """Initializes a constraint.
 
         Args:
@@ -32,7 +32,7 @@ class Constraint(object):
         """
         raise NotImplemented()
 
-    def propagate_assignment(self, assigned_var, assignments, level):
+    def propagate_assignment(self, assigned_var:Variable.Variable, assignments: list, level:int):
         """After one of its constraints was assigned a value, eliminated infeasible values from the second one's domain
 
         Args:
@@ -76,13 +76,13 @@ class Constraint(object):
 
 class ConstraintEnum(Constraint):
 
-    def __init__(self, id, var1, var2, feasibility_fun=None):
-        """Initializes a constraint.
+    def __init__(self, id: int, var1: Variable.Variable, var2: Variable.Variable, feasibility_fun=None):
+        """Initializes a constraint with enumerated all feasible values pairs.
 
         Args:
             id (int): id of the constraint, should be unique inside a CSP
-            var1 (CSP.Variable): first variable of the constraint
-            var2(CSP.Variable): second variable of the constraint
+            var1 (variable.Variable): first variable of the constraint
+            var2(variable.Variable): second variable of the constraint
             feasibility_fun (function): function used to generate the set of feasible couples
         """
         super().__init__(id, var1, var2)
@@ -108,13 +108,13 @@ class ConstraintEnum(Constraint):
 
 class ConstraintLinear(Constraint):
 
-    def __init__(self, id, var1, var2, coef1, coef2, rhs, type):
-        """Initializes a constraint.
+    def __init__(self, id: int, var1: Variable.Variable, var2: Variable.Variable, coef1: float, coef2: float, rhs: float, type: str):
+        """Initializes a constraint of linear expression.
 
         Args:
             id (int): id of the constraint, should be unique inside a CSP
-            var1 (CSP.Variable): first variable of the constraint
-            var2(CSP.Variable): second variable of the constraint
+            var1 (variable.Variable): first variable of the constraint
+            var2(variable.Variable): second variable of the constraint
             coef1(float): Coefficient associated with the first variable
             coef2(float): Coefficient associated with the second variable
             rhs(float): right-hand side

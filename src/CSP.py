@@ -5,8 +5,8 @@ import random
 import numpy as np
 import time
 
-from constraint import Constraint, ConstraintLinear, ConstraintEnum
-from variable import Variable
+from Constraint import Constraint, ConstraintLinear, ConstraintEnum
+from Variable import Variable
 
 
 VARIABLES_SELECTION = ["arbitrary", "smallest_domain", "most_constrained", "dom_over_constr"]
