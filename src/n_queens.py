@@ -25,7 +25,6 @@ def display_sol_nqueens(csp: CSP, N: int):
     
 
 
-
 def solve_nqueens(N: int):
     # modelization
     csp_solver = CSP()
