@@ -235,7 +235,7 @@ class CSP(object):
             (bool): True if the CSP admits at least one feasible solution, False otherwise.
         """
         from backtrack import backtracking  # to avoid circular imports
-        from arc_consistency import ac3
+        from arc_consistency import ac3, ac4
 
         # setup
         self.assignments = [None for _ in range(self.nbVars)]
@@ -248,6 +248,8 @@ class CSP(object):
         if self.param["look-ahead"]["MAC"] or self.param["look-ahead"]["AC3"]: 
             ac3(self)
 
+        ac4(self)
+        
         self.__init_matrix_incidency_supported_values_counter()
         #print("supportedValCount : {}. ".format(self.supportedValCount))
 

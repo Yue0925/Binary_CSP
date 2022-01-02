@@ -39,7 +39,8 @@ def solve_nqueens(N: int):
             csp_solver.add_constraint_enum(i, j, constr_nqueens)
     
 
-    csp_solver.set_AC3()
+    #csp_solver.set_AC3()
+    #csp_solver.set_MAC()
     #csp_solver.set_BT()
     csp_solver.set_FC()
 

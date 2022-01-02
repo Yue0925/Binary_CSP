@@ -38,7 +38,7 @@ if __name__ == "__main__":
 
     csp_solver.display()
 
-    csp_solver.set_AC3()
+    #csp_solver.set_AC3()
     #csp_solver.set_BT()
     csp_solver.set_FC()
 

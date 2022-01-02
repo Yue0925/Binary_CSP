@@ -53,7 +53,7 @@ def solve_coloring(path: str, upperB=0):
                 csp_solver.add_constraint_enum(u, v, constr_coloring)
 
     # parameters setting
-    csp_solver.set_AC3()
+    #csp_solver.set_AC3()
     #csp_solver.set_BT()
     csp_solver.set_FC()
 
