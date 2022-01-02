@@ -53,6 +53,10 @@ def solve_coloring(path: str, upperB=0):
                 csp_solver.add_constraint_enum(u, v, constr_coloring)
 
     # parameters setting
+    csp_solver.set_AC3()
+    #csp_solver.set_BT()
+    csp_solver.set_FC()
+
     csp_solver.set_variable_selection(3)
     csp_solver.set_value_selection(3)
 
@@ -74,4 +78,4 @@ if __name__ == "__main__":
 
     directory = "../instances/"
 
-    solve_coloring(directory + "le450_15b.col", 15)
+    solve_coloring(directory + "anna.col", 11)
