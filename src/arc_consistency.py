@@ -1,4 +1,4 @@
-def ac3(csp):
+def ac3(csp, level=0):
     """Removes all arc-inconsistent values for each variable of a csp
 
     Args:
@@ -19,19 +19,21 @@ def ac3(csp):
         x = c_xy.var1
         y = c_xy.var2
 
-        values = x.dom(0)
+        values = x.dom(level)
         for a in values:
 
             supported = False
-            for b in y.dom(0):
+            for b in y.dom(level):
                 if c_xy.is_feasible(a, b):
                     supported = True
                     break
 
             if not supported:
-                x.remove_value(a, 0)
+                x.remove_value(a, level)
 
                 for c_zx in constrs:
                     if c_zx.var2 == x and c_zx.var1 != y:
                         if c_zx not in to_test:
                             to_test.append(c_zx)
+
+

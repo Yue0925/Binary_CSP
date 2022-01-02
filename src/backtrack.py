@@ -2,6 +2,7 @@
 # -*- coding: utf-8 -*-
 
 import CSP
+from arc_consistency import ac3
 
 def forward_checking(csp: CSP.CSP, level: int, varId, var) -> bool:
     # Forward-checking
@@ -55,6 +56,9 @@ def backtracking(csp: CSP.CSP, level: int) -> bool:
     print("picked var : {}, current domain : {}".format(var.name, var.dom(level)))
     var.level = level
     csp.nb_assigned += 1
+
+    if csp.param["look-ahead"]["AC3"] : 
+        ac3(csp, level)
 
     # try values affections
     values_order = csp.select_values(varId, level)
