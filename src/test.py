@@ -38,12 +38,16 @@ if __name__ == "__main__":
 
     csp_solver.display()
 
+    csp_solver.set_AC3()
+    #csp_solver.set_BT()
+    csp_solver.set_FC()
+
     csp_solver.set_variable_selection(0)
     csp_solver.set_value_selection(3)
 
 
     iter = 0
-    while iter < 10000 and csp_solver.solve():
+    while iter < 1 and csp_solver.solve():
         print()
         print()
         iter += 1

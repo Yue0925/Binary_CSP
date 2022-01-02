@@ -76,9 +76,8 @@ def backtracking(csp: CSP.CSP, level: int) -> bool:
             print("backtracking from value {} for variable {}".format(csp.assignments[varId], var.name))
 
         # A contradiction was found, reset domains and try a different value
-        if contradiction:
-            for var_to_update in csp.vars:
-                var_to_update.current_dom_size[level + 1] = var_to_update.current_dom_size[level]
+        for var_to_update in csp.vars:
+            var_to_update.current_dom_size[level + 1] = var_to_update.current_dom_size[level]
 
     # All values for selected variable lead to a contradiction, current partial assignment is not feasible
     var.level = -1

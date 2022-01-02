@@ -245,7 +245,6 @@ class CSP(object):
             var.current_dom_size = var.dom_size * np.ones(self.nbVars + 1, dtype=int)
 
         # Actual solve
-
         if self.param["look-ahead"]["AC3"] : 
             ac3(self)
 
