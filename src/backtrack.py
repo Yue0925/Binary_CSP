@@ -3,8 +3,25 @@
 
 import CSP
 
+def forward_checking(csp: CSP.CSP, level: int, varId, var) -> bool:
+    # Forward-checking
+    contradiction = False
+    for c in csp.all_associated_constrs(varId):
+        contradiction = not c.propagate_assignment(var, csp.assignments, level)
+        # contradiction = rue if constraint c cannot be verified for current assignment
+        if contradiction:
+            return contradiction
+    return contradiction
 
-def backtracking(csp: CSP.CSP, level: int):
+def bt(csp: CSP.CSP, varId) -> bool:
+    """ Return True, if the assignment of the given variable leads to a contradiction. """
+    for c in csp.all_associated_assigned_constrs(varId):
+        if not c.is_feasible(csp.assignments[c.var1.id], csp.assignments[c.var2.id]):
+            return True
+    return False
+
+
+def backtracking(csp: CSP.CSP, level: int) -> bool:
     """A depth first backtracking algorithm.
 
     Args:
@@ -44,13 +61,13 @@ def backtracking(csp: CSP.CSP, level: int):
     for value in values_order:
         csp.assignments[varId] = value
 
-        # Forward-checking
         contradiction = False
-        for c in csp.all_associated_constrs(varId):
-            contradiction = not c.propagate_assignment(var, csp.assignments, level)
-            # contradiction = True if constraint c cannot be verified for current assignment
-            if contradiction:
-                break
+
+        if csp.param["look-ahead"]["BT"] : 
+            contradiction = bt(csp, varId)
+
+        if csp.param["look-ahead"]["FC"] : 
+            contradiction = forward_checking(csp, level, varId, var)
 
         if not contradiction:
             if backtracking(csp, level + 1):
@@ -59,8 +76,9 @@ def backtracking(csp: CSP.CSP, level: int):
             print("backtracking from value {} for variable {}".format(csp.assignments[varId], var.name))
 
         # A contradiction was found, reset domains and try a different value
-        for var_to_update in csp.vars:
-            var_to_update.current_dom_size[level + 1] = var_to_update.current_dom_size[level]
+        if contradiction:
+            for var_to_update in csp.vars:
+                var_to_update.current_dom_size[level + 1] = var_to_update.current_dom_size[level]
 
     # All values for selected variable lead to a contradiction, current partial assignment is not feasible
     var.level = -1

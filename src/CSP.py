@@ -52,6 +52,7 @@ class CSP(object):
     def __init_parameters(self):
         self.param["variable"] = None
         self.param["value"] = None
+        self.param["look-ahead"] = {"BT": False, "AC3": False, "FC": False, "MAC": False}
     
     def set_variable_selection(self, selection=0):
         if selection<0 or selection> len(VARIABLES_SELECTION)-1:
@@ -63,6 +64,19 @@ class CSP(object):
             raise ValueError("The argument value selection setting {} is invalid.".format(selection))
         self.param.update({"value" : VALUES_SELECTION[selection]})
     
+    def set_BT(self):
+        self.param["look-ahead"].update({"BT": True})
+    
+    def set_AC3(self):
+        self.param["look-ahead"].update({"AC3": True})
+    
+    def set_FC(self):
+        self.param["look-ahead"].update({"FC": True})
+    
+    def set_MAC(self):
+        self.param["look-ahead"].update({"MAC": True})
+
+
     def __init_matrix_incidency_supported_values_counter(self):
         """ Initialize a binary incidency matirx that mat[var1][var2] = True, if var1 and var2 are linked with a constraint. """
         self.matrixIncident = [[False for _ in range(self.nbVars)] for _ in range(self.nbVars)] 
@@ -201,7 +215,7 @@ class CSP(object):
     def all_associated_assigned_constrs(self, varId: int):
         """ Return all constraints containing the given variable, and the other variable is also assigned. """
         return list(filter(
-            lambda c: c.var1.assigned and c.var2.assigned,
+            lambda c: not (self.assignments[c.var1.id] is None or self.assignments[c.var2.id] is None),
             self.all_associated_constrs(varId)
         ))
 
@@ -231,7 +245,9 @@ class CSP(object):
             var.current_dom_size = var.dom_size * np.ones(self.nbVars + 1, dtype=int)
 
         # Actual solve
-        ac3(self)
+
+        if self.param["look-ahead"]["AC3"] : 
+            ac3(self)
 
         self.__init_matrix_incidency_supported_values_counter()
         #print("supportedValCount : {}. ".format(self.supportedValCount))
