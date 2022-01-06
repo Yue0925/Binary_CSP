@@ -67,6 +67,7 @@ def backtracking(csp: CSP.CSP, level: int) -> bool:
     values_order = csp.select_values(varId, level)
     for value in values_order:
         csp.assignments[varId] = value
+        csp.vars[varId].assignment = value
 
         contradiction = False
 
@@ -89,6 +90,7 @@ def backtracking(csp: CSP.CSP, level: int) -> bool:
     # All values for selected variable lead to a contradiction, current partial assignment is not feasible
     var.level = -1
     csp.assignments[varId] = None
+    csp.vars[varId].assignment = None
     csp.nb_assigned -= 1
 
     return False
