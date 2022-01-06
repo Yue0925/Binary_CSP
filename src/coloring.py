@@ -74,11 +74,12 @@ def solve_coloring(path: str, upperB=0):
 
 
 if __name__ == "__main__":
-    chromaticsKnown = { "myciel3.col": 4, "myciel4.col": 5, "myciel5.col": 6, "myciel6.col": 7, "myciel7.col": 8,
-        "anna.col" : 11, "david.col": 11, "homer.col": 13, "le450_15b.col": 15, "huck.col": 11, "jean.col": 10,
-        "games120.col" : 9, "miles250.col": 8, "queen7_7.col": 7, "queen11_11.col": 11, "miles500.col": 20,
-        "le450_25a.col": 25, "le450_5a.col": 5, "mulsol.i.1.col": 49, "zeroin.i.1.col": 49, "zeroin.i.2.col": 30, 
-        "miles1000.col": 42}
+    chromaticsKnown = { "myciel3.col": 4, "myciel4.col": 5 }
+    # , "myciel5.col": 6, "myciel6.col": 7, "myciel7.col": 8,
+    #     "anna.col" : 11, "david.col": 11, "homer.col": 13, "le450_15b.col": 15, "huck.col": 11, "jean.col": 10,
+    #     "games120.col" : 9, "miles250.col": 8, "queen7_7.col": 7, "queen11_11.col": 11, "miles500.col": 20,
+    #     "le450_25a.col": 25, "le450_5a.col": 5, "mulsol.i.1.col": 49, "zeroin.i.1.col": 49, "zeroin.i.2.col": 30, 
+    #     "miles1000.col": 42}
 
     directory = "../instances/"
 
