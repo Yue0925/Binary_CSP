@@ -45,7 +45,12 @@ def init_ac4(csp, level=0):
     Supporters = {(id, a) : list() for id in range(csp.nbVars) for a in csp.vars[id].dom(level)}
     Counters = {}
 
-    for c in csp.constrs:
+    constrs = []
+    for constr in csp.constrs:
+        constrs.append(constr)
+        constrs.append(constr.reverse())
+
+    for c in constrs:
         x = c.var1
         y = c.var2
         values = x.dom(level)

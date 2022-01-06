@@ -18,6 +18,7 @@ class Variable(object):
         # self.domFun = domFun # domaine définie par une fonction
         self.level = -1
         self.current_dom_size = None
+        self.assignment = None
 
     def __repr__(self):
         return "variable {}".format(self.name)
@@ -31,6 +32,8 @@ class Variable(object):
         Returns:
             (list): list of all remaining possible values at given level
         """
+        if not self.assignment is None:
+            return [self.assignment]
         if level == -1:
             return self._dom[:]
         return self._dom[:self.current_dom_size[level]]

@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 import CSP
-from arc_consistency import ac3
+from arc_consistency import ac3, ac4
 
 def forward_checking(csp: CSP.CSP, level: int, varId, var) -> bool:
     # Forward-checking
@@ -60,10 +60,14 @@ def backtracking(csp: CSP.CSP, level: int) -> bool:
     if csp.param["look-ahead"]["AC3"] : 
         ac3(csp, level)
 
+    if csp.param["look-ahead"]["AC4"] : 
+        ac4(csp, level)
+
     # try values affections
     values_order = csp.select_values(varId, level)
     for value in values_order:
         csp.assignments[varId] = value
+        csp.vars[varId].assignment = value
 
         contradiction = False
 
@@ -86,6 +90,7 @@ def backtracking(csp: CSP.CSP, level: int) -> bool:
     # All values for selected variable lead to a contradiction, current partial assignment is not feasible
     var.level = -1
     csp.assignments[varId] = None
+    csp.vars[varId].assignment = None
     csp.nb_assigned -= 1
 
     return False
