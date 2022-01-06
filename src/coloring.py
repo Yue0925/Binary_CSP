@@ -55,17 +55,21 @@ def solve_coloring(path: str, upperB=0):
     # parameters setting
     #csp_solver.set_AC3()
     #csp_solver.set_BT()
+    csp_solver.set_AC4()
     csp_solver.set_FC()
 
     csp_solver.set_variable_selection(3)
     csp_solver.set_value_selection(3)
 
     # solve
-    csp_solver.solve()
+    isFeasible = csp_solver.solve()
 
     print("\n\nCSP solver explored {} nodes in the research tree.".format(csp_solver.exploredNodes))
     print("Total {}s used in the tree exploration.".format(csp_solver.exploreTime))
     print("Sol is feasible ? {}".format(csp_solver.isFeasible))
+
+    return nodes, edges, isFeasible, csp_solver.exploredNodes, csp_solver.exploreTime
+
 
 
 
@@ -78,4 +82,53 @@ if __name__ == "__main__":
 
     directory = "../instances/"
 
-    solve_coloring(directory + "anna.col", 11)
+    with open('../results/Coloring.tex', 'w') as f:
+        latex = r"""\documentclass{article}
+
+\usepackage[french]{babel}
+\usepackage [utf8] {inputenc} % utf-8 / latin1
+\usepackage{multicol}
+
+\setlength{\hoffset}{-18pt}
+\setlength{\oddsidemargin}{0pt} % Marge gauche sur pages impaires
+\setlength{\evensidemargin}{9pt} % Marge gauche sur pages paires
+\setlength{\marginparwidth}{54pt} % Largeur de note dans la marge
+\setlength{\textwidth}{481pt} % Largeur de la zone de texte (17cm)
+\setlength{\voffset}{-18pt} % Bon pour DOS
+\setlength{\marginparsep}{7pt} % Séparation de la marge
+\setlength{\topmargin}{0pt} % Pas de marge en haut
+\setlength{\headheight}{13pt} % Haut de page
+\setlength{\headsep}{10pt} % Entre le haut de page et le texte
+\setlength{\footskip}{27pt} % Bas de page + séparation
+\setlength{\textheight}{668pt} % Hauteur de la zone de texte (25cm)
+
+\begin{document}
+\begin{center}
+\renewcommand{\arraystretch}{1.4}
+ \begin{tabular}{lccccc}
+	\hline
+\textbf{Instance}  & \textbf{vertices} & \textbf{edges}  & \textbf{Chromatic Number} & \textbf{Time(s)} & \textbf{Explored Nodes} \\\hline
+
+"""
+        f.write(latex)
+
+        for instance in chromaticsKnown.items():
+            nodes, edges, isFeasible, exploredNodes, exploreTime = solve_coloring(directory + instance[0], instance[1])
+            f.write("{} & {} & {} & ".format(instance[0], nodes, edges))
+            if isFeasible:
+                f.write("{} & ".format(instance[1]))
+            else:
+                f.write("- & ")
+            f.write("{} & {} \\\\ \n".format(exploreTime, exploredNodes))
+        
+        latex = r"""
+\\
+\hline\end{tabular}
+\end{center}
+
+
+\end{document}"""
+        f.write(latex)
+
+    
+

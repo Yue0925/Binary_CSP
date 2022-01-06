@@ -266,6 +266,6 @@ class CSP(object):
         self.isFeasible = backtracking(self, 0)
 
         end = time.time()
-        self.exploreTime = end - start
+        self.exploreTime = round(end - start, 3)
         
         return self.isFeasible
