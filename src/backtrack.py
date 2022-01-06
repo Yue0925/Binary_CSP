@@ -35,11 +35,11 @@ def backtracking(csp: CSP.CSP, level: int) -> bool:
     if csp.assignments is None:
         raise AttributeError("Missing partial assignment : csp.assignments has not been initialized")
 
-    print("level =", level, "assignments : ")
-    for var in csp.vars:
-        v = csp.assignments[var.id]
-        if v is not None:
-            print(var.name, " = ", v)
+    #print("level =", level, "assignments : ")
+    # for var in csp.vars:
+    #     v = csp.assignments[var.id]
+    #     if v is not None:
+    #         print(var.name, " = ", v)
 
     if csp.nb_assigned == csp.nbVars:
         return True
@@ -53,7 +53,7 @@ def backtracking(csp: CSP.CSP, level: int) -> bool:
     # pick up a variable
     varId = csp.select_unassigned_varId(level)
     var = csp.vars[varId]
-    print("picked var : {}, current domain : {}".format(var.name, var.dom(level)))
+    #print("picked var : {}, current domain : {}".format(var.name, var.dom(level)))
     var.level = level
     csp.nb_assigned += 1
 
@@ -67,7 +67,7 @@ def backtracking(csp: CSP.CSP, level: int) -> bool:
     values_order = csp.select_values(varId, level)
     for value in values_order:
         csp.assignments[varId] = value
-        csp.vars[varId].assignment = value
+        #csp.vars[varId].assignment = value
 
         contradiction = False
 
@@ -81,7 +81,7 @@ def backtracking(csp: CSP.CSP, level: int) -> bool:
             if backtracking(csp, level + 1):
                 return True
             # else contradiction found further down the tree, so try another value
-            print("backtracking from value {} for variable {}".format(csp.assignments[varId], var.name))
+            #print("backtracking from value {} for variable {}".format(csp.assignments[varId], var.name))
 
         # A contradiction was found, reset domains and try a different value
         for var_to_update in csp.vars:
@@ -90,7 +90,7 @@ def backtracking(csp: CSP.CSP, level: int) -> bool:
     # All values for selected variable lead to a contradiction, current partial assignment is not feasible
     var.level = -1
     csp.assignments[varId] = None
-    csp.vars[varId].assignment = None
+    #csp.vars[varId].assignment = None
     csp.nb_assigned -= 1
 
     return False
