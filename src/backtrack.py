@@ -9,15 +9,21 @@ def forward_checking(csp: CSP.CSP, level: int, varId, var) -> bool:
     contradiction = False
     for c in csp.all_associated_constrs(varId):
         contradiction = not c.propagate_assignment(var, csp.assignments, level)
-        # contradiction = rue if constraint c cannot be verified for current assignment
+        # contradiction = True if constraint c cannot be verified for current assignment
         if contradiction:
-            return contradiction
+            break
     return contradiction
 
 def bt(csp: CSP.CSP, varId) -> bool:
     """ Return True, if the assignment of the given variable leads to a contradiction. """
     for c in csp.all_associated_assigned_constrs(varId):
-        if not c.is_feasible(csp.assignments[c.var1.id], csp.assignments[c.var2.id]):
+
+        if isinstance(c, CSP.ConstraintBinary):
+            feasible = c.is_feasible([csp.assignments[c.var1.id], csp.assignments[c.var2.id]])
+        else:
+            feasible = c.is_feasible([csp.assignments[var.id] for var in c.vars])
+
+        if not feasible:
             return True
     return False
 
@@ -35,7 +41,7 @@ def backtracking(csp: CSP.CSP, level: int) -> bool:
     if csp.assignments is None:
         raise AttributeError("Missing partial assignment : csp.assignments has not been initialized")
 
-    #print("level =", level, "assignments : ")
+    # print("level =", level, "assignments : ")
     # for var in csp.vars:
     #     v = csp.assignments[var.id]
     #     if v is not None:
@@ -53,7 +59,7 @@ def backtracking(csp: CSP.CSP, level: int) -> bool:
     # pick up a variable
     varId = csp.select_unassigned_varId(level)
     var = csp.vars[varId]
-    #print("picked var : {}, current domain : {}".format(var.name, var.dom(level)))
+    # print("picked var : {}, current domain : {}".format(var.name, var.dom(level)))
     var.level = level
     csp.nb_assigned += 1
 

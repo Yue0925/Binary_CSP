@@ -4,7 +4,8 @@
 from CSP import *
 
 def constr_nqueens(x: int, y: int, a: int, b: int):
-    return (a != b) and (abs(x - y) != abs(a - b))
+    # return (a != b) and (abs(x - y) != abs(a - b))
+    return abs(x - y) != abs(a - b)
 
 
 def display_sol_nqueens(csp: CSP, N: int):
@@ -30,25 +31,31 @@ def solve_nqueens(N: int, settings=None):
     csp_solver = CSP()
 
     # N variables, (i, xi) position of each queen
+    x = []
     for i in range(N):
-        csp_solver.add_variable("x{}".format(i+1), 1, N)
+        x.append(csp_solver.add_variable("x{}".format(i+1), 1, N))
     
     # constraints, for every two distinct queens
     for i in range(N-1):
         for j in range(i+1, N):
             csp_solver.add_constraint_enum(i, j, constr_nqueens)
+            # csp_solver.add_constraint(x[i] - x[j] != j - i)
+            # csp_solver.add_constraint(x[j] - x[i] != j - i)
+    csp_solver.add_all_diff(x)
+
     
     # parameters settings
     # by defaut, we use the backtracking algorithm
     if settings is None:
-        csp_solver.set_BT() 
-    for param in settings:
-        if param == "BT": csp_solver.set_BT()
-        if param == "FC": csp_solver.set_FC()
-        if param == "MAC3": csp_solver.set_MAC3()
-        if param == "MAC4": csp_solver.set_MAC4()
-        if param == "AC3": csp_solver.set_AC3()
-        if param == "AC4": csp_solver.set_AC4()
+        csp_solver.set_BT()
+    else:
+        for param in settings:
+            if param == "BT": csp_solver.set_BT()
+            if param == "FC": csp_solver.set_FC()
+            if param == "MAC3": csp_solver.set_MAC3()
+            if param == "MAC4": csp_solver.set_MAC4()
+            if param == "AC3": csp_solver.set_AC3()
+            if param == "AC4": csp_solver.set_AC4()
 
     csp_solver.set_variable_selection(3)
     csp_solver.set_value_selection(3)
@@ -112,7 +119,7 @@ if __name__ == "__main__":
     #import timeit
     #print(timeit.timeit("solve_nqueens(10)", globals=locals()))
 
-    #solve_nqueens(100)
-    benchmarking()
+    solve_nqueens(23, settings=["FC"])
+    # benchmarking()
 
 

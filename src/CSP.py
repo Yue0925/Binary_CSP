@@ -5,7 +5,7 @@ import random
 import numpy as np
 import time
 
-from Constraint import Constraint, ConstraintLinear, ConstraintEnum
+from Constraint import Constraint, ConstraintBinary, ConstraintEnum, ConstraintAllDiff, ConstraintLinear
 from Variable import Variable
 
 
@@ -90,11 +90,13 @@ class CSP(object):
         self.supportedValCount = [{val : 0 for val in self.vars[id].dom(-1)} for id in range(self.nbVars)]
         
         for c in self.constrs:
+            if not isinstance(c, ConstraintBinary):
+                continue
             self.matrixIncident[c.var1.id][c.var2.id] = True
             self.matrixIncident[c.var2.id][c.var1.id] = True
             for a in c.var1.dom(0):
                 for b in c.var2.dom(0):
-                    if c.is_feasible(a, b):
+                    if c.is_feasible([a, b]):
                         nb = self.supportedValCount[c.var1.id][a]
                         self.supportedValCount[c.var1.id].update({a : nb+1})
                         nb = self.supportedValCount[c.var2.id][b]
@@ -106,18 +108,29 @@ class CSP(object):
 
     def add_variable(self, name: str, domMin: int, domMax: int):
         """ Create and add a new variable to CSP. """
-        self.vars.append(Variable(self.nbVars, name, domMin, domMax))
+        var = Variable(self.nbVars, name, domMin, domMax)
+        self.vars.append(var)
         self.nbVars += 1
+        return var
 
     def add_constraint_enum(self, var1: int, var2: int, funCompatible=None):
         """ Create and add a new enumeration constraint to CSP. """
-        self.constrs.append(ConstraintEnum(self.nbConstrs, self.vars[var1], self.vars[var2], funCompatible))
+        constr = ConstraintEnum(self.nbConstrs, self.vars[var1], self.vars[var2], funCompatible)
+        self.constrs.append(constr)
         self.nbConstrs += 1
+        return constr
 
     def add_constraint(self, constr):
         constr.id = self.nbConstrs
         self.constrs.append(constr)
         self.nbConstrs += 1
+        return constr
+
+    def add_all_diff(self, vars):
+        constr = ConstraintAllDiff(self.nbConstrs, vars)
+        self.constrs.append(constr)
+        self.nbConstrs += 1
+        return constr
 
     def select_unassigned_varId(self, level=-1):
         if self.param["variable"] == VARIABLES_SELECTION[0]:
@@ -215,14 +228,18 @@ class CSP(object):
     def all_associated_constrs(self, varId: int):
         """ Return all constraints containing the given variable. """
         return list(filter(
-            lambda c: c.var1.id == varId or c.var2.id == varId,
+            lambda c:
+                c.var1.id == varId or c.var2.id == varId if isinstance(c, ConstraintBinary)
+                else varId in [var.id for var in c.vars],
             self.constrs
         ))
 
     def all_associated_assigned_constrs(self, varId: int):
         """ Return all constraints containing the given variable, and the other variable is also assigned. """
         return list(filter(
-            lambda c: not (self.assignments[c.var1.id] is None or self.assignments[c.var2.id] is None),
+            lambda c:
+                not (self.assignments[c.var1.id] is None or self.assignments[c.var2.id] is None) if isinstance(c, ConstraintBinary)
+                else len([0 for var in c.vars if self.assignments[var.id] is not None]) >= 2,
             self.all_associated_constrs(varId)
         ))
 

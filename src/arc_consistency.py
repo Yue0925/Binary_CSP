@@ -1,4 +1,5 @@
 from typing import Counter
+from Constraint import ConstraintBinary
 
 
 def ac3(csp, level=0):
@@ -12,8 +13,9 @@ def ac3(csp, level=0):
     """
     constrs = []
     for constr in csp.constrs:
-        constrs.append(constr)
-        constrs.append(constr.reverse())
+        if isinstance(constr, ConstraintBinary):  # Does not check all diff constraints for simplicity
+            constrs.append(constr)
+            constrs.append(constr.reverse())
 
     to_test = constrs[:]
     while to_test:
@@ -27,7 +29,7 @@ def ac3(csp, level=0):
 
             supported = False
             for b in y.dom(level):
-                if c_xy.is_feasible(a, b):
+                if c_xy.is_feasible([a, b]):
                     supported = True
                     break
 
@@ -47,10 +49,13 @@ def init_ac4(csp, level=0):
 
     constrs = []
     for constr in csp.constrs:
-        constrs.append(constr)
-        constrs.append(constr.reverse())
+        if isinstance(constr, ConstraintBinary):
+            constrs.append(constr)
+            constrs.append(constr.reverse())
 
     for c in constrs:
+        if not isinstance(constr, ConstraintBinary):
+            continue
         x = c.var1
         y = c.var2
         values = x.dom(level)
@@ -58,7 +63,7 @@ def init_ac4(csp, level=0):
         for a in values:
             total = 0
             for b in y.dom(level):
-                if c.is_feasible(a, b):
+                if c.is_feasible([a, b]):
                     total += 1
                     l = Supporters[(y.id, b)]
                     l.append((x.id, a))

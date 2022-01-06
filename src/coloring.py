@@ -43,14 +43,16 @@ def solve_coloring(path: str, upperB=0):
     csp_solver = CSP()
 
     # variables
+    x = []
     for i in range(nodes):
-        csp_solver.add_variable("x{}".format(i), 1, upperB)
+        x.append(csp_solver.add_variable("x{}".format(i), 1, upperB))
 
     # constraints
     for u in range(nodes-1):
         for v in range(u+1, nodes):
             if matrix[u][v]: # if u, v are adjacent
-                csp_solver.add_constraint_enum(u, v, constr_coloring)
+                # csp_solver.add_constraint_enum(u, v, constr_coloring)
+                csp_solver.add_constraint(x[u] != x[v])
 
     # parameters setting
     #csp_solver.set_AC3()
