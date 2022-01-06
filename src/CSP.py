@@ -52,7 +52,8 @@ class CSP(object):
     def __init_parameters(self):
         self.param["variable"] = None
         self.param["value"] = None
-        self.param["look-ahead"] = {"BT": False, "AC3": False, "FC": False, "MAC": False}
+        self.param["look-ahead"] = {"BT": False, "AC3": False, "AC4": False, 
+        "FC": False, "MAC3": False, "MAC4": False}
     
     def set_variable_selection(self, selection=0):
         if selection<0 or selection> len(VARIABLES_SELECTION)-1:
@@ -69,12 +70,18 @@ class CSP(object):
     
     def set_AC3(self):
         self.param["look-ahead"].update({"AC3": True})
+
+    def set_AC4(self):
+        self.param["look-ahead"].update({"AC4": True})
     
     def set_FC(self):
         self.param["look-ahead"].update({"FC": True})
     
-    def set_MAC(self):
-        self.param["look-ahead"].update({"MAC": True})
+    def set_MAC3(self):
+        self.param["look-ahead"].update({"MAC3": True})
+
+    def set_MAC4(self):
+        self.param["look-ahead"].update({"MAC4": True})
 
 
     def __init_matrix_incidency_supported_values_counter(self):
@@ -245,10 +252,11 @@ class CSP(object):
             var.current_dom_size = var.dom_size * np.ones(self.nbVars + 1, dtype=int)
 
         # Actual solve
-        if self.param["look-ahead"]["MAC"] or self.param["look-ahead"]["AC3"]: 
+        if self.param["look-ahead"]["MAC3"] or self.param["look-ahead"]["AC3"]: 
             ac3(self)
 
-        ac4(self)
+        if self.param["look-ahead"]["MAC4"] or self.param["look-ahead"]["AC4"]: 
+            ac4(self)
         
         self.__init_matrix_incidency_supported_values_counter()
         #print("supportedValCount : {}. ".format(self.supportedValCount))

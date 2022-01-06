@@ -40,8 +40,9 @@ def solve_nqueens(N: int):
     
 
     #csp_solver.set_AC3()
-    #csp_solver.set_MAC()
+    #csp_solver.set_MAC3()
     #csp_solver.set_BT()
+    csp_solver.set_MAC4()
     csp_solver.set_FC()
 
     csp_solver.set_variable_selection(0)

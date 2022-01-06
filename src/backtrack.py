@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 import CSP
-from arc_consistency import ac3
+from arc_consistency import ac3, ac4
 
 def forward_checking(csp: CSP.CSP, level: int, varId, var) -> bool:
     # Forward-checking
@@ -59,6 +59,9 @@ def backtracking(csp: CSP.CSP, level: int) -> bool:
 
     if csp.param["look-ahead"]["AC3"] : 
         ac3(csp, level)
+
+    if csp.param["look-ahead"]["AC4"] : 
+        ac4(csp, level)
 
     # try values affections
     values_order = csp.select_values(varId, level)
