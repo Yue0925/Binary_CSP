@@ -55,6 +55,12 @@ def backtracking(csp: CSP.CSP, level: int) -> bool:
     for var_to_update in csp.vars:
         var_to_update.current_dom_size[level + 1] = var_to_update.current_dom_size[level]
 
+    if csp.param["look-ahead"]["MAC3"] : 
+        ac3(csp, level)
+
+    if csp.param["look-ahead"]["MAC4"] : 
+        ac4(csp, level)
+
     # pick up a variable
     varId = csp.select_unassigned_varId(level)
     var = csp.vars[varId]
@@ -66,14 +72,13 @@ def backtracking(csp: CSP.CSP, level: int) -> bool:
     values_order = csp.select_values(varId, level)
     for value in values_order:
         csp.assignments[varId] = value
-        # csp.vars[varId].assignment = value
+        var.remove_all_values_except(value, level)
 
         contradiction = False
 
         if csp.param["look-ahead"]["BT"]:
             contradiction = bt(csp, varId)
-
-        if csp.param["look-ahead"]["FC"]:
+        elif csp.param["look-ahead"]["FC"]:
             contradiction = forward_checking(csp, level, varId, var)
 
         if not contradiction:
@@ -84,7 +89,10 @@ def backtracking(csp: CSP.CSP, level: int) -> bool:
 
         # A contradiction was found, reset domains and try a different value
         for var_to_update in csp.vars:
-            var_to_update.current_dom_size[level + 1] = var_to_update.current_dom_size[level]
+            if var_to_update.id == var.id :
+                var_to_update.current_dom_size[level] = var_to_update.current_dom_size[level - 1]
+            else :
+                var_to_update.current_dom_size[level + 1] = var_to_update.current_dom_size[level]
 
     # All values for selected variable lead to a contradiction, current partial assignment is not feasible
     var.level = -1

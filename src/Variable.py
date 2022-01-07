@@ -18,7 +18,6 @@ class Variable(object):
         # self.domFun = domFun  # domaine defini par une fonction
         self.level = -1
         self.current_dom_size = None
-        # self.assignment = None
         self.associated_constrs = None
 
     def __repr__(self):
@@ -33,8 +32,6 @@ class Variable(object):
         Returns:
             (list): list of all remaining possible values at given level
         """
-        # if not self.assignment is None:
-        #    return [self.assignment]
         if level == -1:
             return self._dom[:]
         return self._dom[:self.current_dom_size[level]]
@@ -52,6 +49,14 @@ class Variable(object):
             raise ValueError("Value {} not found in variable {}'s domain at level {}".format(value, self.name, level))
         self._dom[to_remove], self._dom[last] = self._dom[last], self._dom[to_remove]
         self.current_dom_size[level] -= 1
+
+    def remove_all_values_except(self, value:int, level:int):
+        values = self.dom(level)
+        for v in values:
+            if v == value:
+                continue
+            else:
+                self.remove_value(v, level)
 
     def __add__(self, other):
         return LinearExpr(var1=self, coef1=1) + other

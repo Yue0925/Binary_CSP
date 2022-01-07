@@ -1,14 +1,13 @@
+from Constraint import ConstraintBinary
+
 
 
 def ac3(csp, level=0):
     """Removes all arc-inconsistent values for each variable of a csp
-
     Args:
         csp (CSP.CSP): A CSP solver
         level (int): depth level at which arc-consistency is verified in a backtracking tree
-
     Returns:
-
     """
     constrs = []
     for constr in csp.constrs:
@@ -90,4 +89,3 @@ def ac4(csp, level=0):
             if counters[(x_id, y_id, a)] == 0 and a in csp.vars[x_id].dom(level):
                 csp.vars[x_id].remove_value(a, level)
                 Q.append((x_id, a))
-

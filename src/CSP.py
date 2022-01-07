@@ -53,7 +53,10 @@ class CSP(object):
         self.param["variable"] = None
         self.param["value"] = None
         self.param["look-ahead"] = {
-            "BT": False, "AC3": False, "AC4": False, "FC": False, "MAC3": False, "MAC4": False
+            "BT": False, "FC": False, "MAC3": False, "MAC4": False
+        }
+        self.param["root"] = { 
+            "AC3": False, "AC4": False
         }
     
     def set_variable_selection(self, selection=0):
@@ -70,19 +73,21 @@ class CSP(object):
         self.param["look-ahead"].update({"BT": True})
     
     def set_AC3(self):
-        self.param["look-ahead"].update({"AC3": True})
+        self.param["root"].update({"AC3": True})
 
     def set_AC4(self):
-        self.param["look-ahead"].update({"AC4": True})
+        self.param["root"].update({"AC4": True})
     
     def set_FC(self):
         self.param["look-ahead"].update({"FC": True})
     
     def set_MAC3(self):
         self.param["look-ahead"].update({"MAC3": True})
+        self.param["look-ahead"].update({"BT": True})
 
     def set_MAC4(self):
         self.param["look-ahead"].update({"MAC4": True})
+        self.param["look-ahead"].update({"BT": True})
 
     def __init_matrix_incidence_supported_values_counter(self):
         """ Initialize a binary incidence matrix such that mat[var1][var2] = True if var1 and var2 are linked by a
@@ -270,10 +275,9 @@ class CSP(object):
             var.associated_constrs = None
 
         # Actual solve
-        if self.param["look-ahead"]["MAC3"] or self.param["look-ahead"]["AC3"]: 
+        if self.param["root"]["AC3"]: 
             ac3(self)
-
-        if self.param["look-ahead"]["MAC4"] or self.param["look-ahead"]["AC4"]: 
+        elif self.param["root"]["AC4"]: 
             ac4(self)
         
         self.__init_matrix_incidence_supported_values_counter()
