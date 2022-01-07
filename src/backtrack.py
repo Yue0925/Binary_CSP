@@ -73,10 +73,10 @@ def backtracking(csp: CSP.CSP, level: int) -> bool:
 
         contradiction = False
 
-        if csp.param["look-ahead"]["BT"] : 
+        if csp.param["look-ahead"]["BT"]:
             contradiction = bt(csp, varId)
 
-        if csp.param["look-ahead"]["FC"] : 
+        if csp.param["look-ahead"]["FC"]:
             contradiction = forward_checking(csp, level, varId, var)
 
         if not contradiction:

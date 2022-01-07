@@ -129,7 +129,7 @@ class ConstraintEnum(ConstraintBinary):
         """
         super().__init__(id, var1, var2)
 
-        self.feasibleTuples = set()  # l'ensemble couples admissibles
+        self.feasibleTuples = set()  # set of feasible values
         for a in var1.dom(-1):
             for b in var2.dom(-1):
                 if feasibility_fun is None:
