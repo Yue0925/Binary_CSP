@@ -48,6 +48,9 @@ class CSP(object):
         self.exploredNodes = 0
         self.exploreTime = 0
         self.isFeasible = False
+        self.timeOut = False
+        self.timeLimit = 300 # seconds
+        self.start = None
     
     def __init_parameters(self):
         self.param["variable"] = None
@@ -283,11 +286,11 @@ class CSP(object):
         self.__init_matrix_incidence_supported_values_counter()
         # print("supportedValCount : {}. ".format(self.supportedValCount))
 
-        start = time.time()
+        self.start = time.time()
 
         self.isFeasible = backtracking(self, 0)
 
         end = time.time()
-        self.exploreTime = round(end - start, 3)
+        self.exploreTime = round(end - self.start, 3)
         
         return self.isFeasible

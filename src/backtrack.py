@@ -3,6 +3,7 @@
 
 import CSP
 from arc_consistency import ac3, ac4
+import time
 
 
 def forward_checking(csp: CSP.CSP, level: int, varId, var) -> bool:
@@ -49,6 +50,10 @@ def backtracking(csp: CSP.CSP, level: int) -> bool:
     if csp.nb_assigned == csp.nbVars:
         return True
 
+    if time.time() - csp.start > csp.timeLimit:
+        csp.timeOut = True
+        return False
+    
     csp.exploredNodes += 1  # arrived at a new node
 
     # Propagate domain updates to (potential) children nodes

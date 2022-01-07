@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
+from typing import Tuple
 from CSP import *
 import os
 
@@ -29,12 +30,23 @@ def lecture(path: str):
     return matrixIncidency, nodes, edges
 
 
-def solve_coloring(path: str, upperB=0):
+def verification(assignment, matrix) -> bool:
+    """ Verify if the given solution is satisfied by graph coloring problem. """
+    nodes = len(assignment)
+    for u in range(nodes-1):
+        for v in range(u+1, nodes):
+            if assignment[u] is None or assignment[v] is None: return False
+            if matrix[u][v]:  # if u, v are adjacent
+                if assignment[u] == assignment[v] : return False
+    return True
+
+
+def solve_coloring(path: str, colors):
     """ Solve the (simple undirected) graph coloring problem with a default given chromatic number. """
     matrix, nodes, edges = lecture(path)
 
-    if upperB == 0:
-        upperB = max(list(map(sum, matrix))) + 1  # set upper bound as the maximum degree + 1
+    # if upperB == 0:
+    #     upperB = max(list(map(sum, matrix))) + 1  # set upper bound as the maximum degree + 1
 
     # mobilization
     csp_solver = CSP()
@@ -42,7 +54,7 @@ def solve_coloring(path: str, upperB=0):
     # variables
     x = []
     for i in range(nodes):
-        x.append(csp_solver.add_variable("x{}".format(i), 1, upperB))
+        x.append(csp_solver.add_variable("x{}".format(i), 1, colors))
 
     # constraints
     for u in range(nodes-1):
@@ -66,16 +78,19 @@ def solve_coloring(path: str, upperB=0):
     print("Total {}s used in the tree exploration.".format(csp_solver.exploreTime))
     print("Sol is feasible ? {}".format(csp_solver.isFeasible))
 
-    return nodes, edges, isFeasible, csp_solver.exploredNodes, csp_solver.exploreTime
+    if isFeasible != verification(csp_solver.assignments, matrix):
+        isFeasible = False
+        print("The solution found by Solver is not valid ! ")
+    return nodes, edges, isFeasible, csp_solver.exploredNodes, csp_solver.exploreTime, csp_solver.timeOut
 
 
 if __name__ == "__main__":
-    chromaticsKnown = {"myciel3.col": 4, "myciel4.col": 5}
-    # , "myciel5.col": 6, "myciel6.col": 7, "myciel7.col": 8,
-    #     "anna.col" : 11, "david.col": 11, "homer.col": 13, "le450_15b.col": 15, "huck.col": 11, "jean.col": 10,
-    #     "games120.col" : 9, "miles250.col": 8, "queen7_7.col": 7, "queen11_11.col": 11, "miles500.col": 20,
-    #     "le450_25a.col": 25, "le450_5a.col": 5, "mulsol.i.1.col": 49, "zeroin.i.1.col": 49, "zeroin.i.2.col": 30, 
-    #     "miles1000.col": 42}
+    chromaticsKnown = {"myciel3.col": 4, "myciel3.col": 3, "myciel4.col": 5, "myciel4.col": 4
+    , "myciel5.col": 6, "myciel6.col": 7, "myciel7.col": 8,
+        "anna.col" : 11, "david.col": 11, "homer.col": 13, "le450_15b.col": 15, "huck.col": 11, "jean.col": 10,
+        "games120.col" : 9, "miles250.col": 8, "queen7_7.col": 7, "queen11_11.col": 11, "miles500.col": 20,
+        "le450_25a.col": 25, "le450_5a.col": 5, "mulsol.i.1.col": 49, "zeroin.i.1.col": 49, "zeroin.i.2.col": 30, 
+        "miles1000.col": 42}
 
     directory = "../instances/"
 
@@ -102,20 +117,22 @@ if __name__ == "__main__":
 \begin{document}
 \begin{center}
 \renewcommand{\arraystretch}{1.4}
- \begin{tabular}{lccccc}
+ \begin{tabular}{lcccccc}
 	\hline
-\textbf{Instance}  & \textbf{vertices} & \textbf{edges}  & \textbf{Chromatic Number} & \textbf{Time(s)} & \textbf{Explored Nodes} \\\hline
+\textbf{Instance}  & \textbf{vertices} & \textbf{edges}  & \textbf{Chromatic Number} & \textbf{Feasible?} & \textbf{Time(s)} & \textbf{Explored Nodes} \\\hline
 
 """
         f.write(latex)
 
         for instance in chromaticsKnown.items():
-            nodes, edges, isFeasible, exploredNodes, exploreTime = solve_coloring(directory + instance[0], instance[1])
-            f.write("{} & {} & {} & ".format(instance[0], nodes, edges))
+            nodes, edges, isFeasible, exploredNodes, exploreTime, timeOut = solve_coloring(directory + instance[0], instance[1])
+            f.write("{} & {} & {} & {} & ".format(instance[0], nodes, edges, instance[1]))
             if isFeasible:
-                f.write("{} & ".format(instance[1]))
+                f.write("Y & ")
+            elif timeOut:
+                f.write("TO & ")
             else:
-                f.write("- & ")
+                f.write("N & ")
             f.write("{} & {} \\\\ \n".format(exploreTime, exploredNodes))
         
         latex = r"""
