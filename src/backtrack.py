@@ -4,6 +4,7 @@
 import CSP
 from arc_consistency import ac3, ac4
 
+
 def forward_checking(csp: CSP.CSP, level: int, varId, var) -> bool:
     # Forward-checking
     contradiction = False
@@ -13,6 +14,7 @@ def forward_checking(csp: CSP.CSP, level: int, varId, var) -> bool:
         if contradiction:
             break
     return contradiction
+
 
 def bt(csp: CSP.CSP, varId) -> bool:
     """ Return True, if the assignment of the given variable leads to a contradiction. """
@@ -63,17 +65,11 @@ def backtracking(csp: CSP.CSP, level: int) -> bool:
     var.level = level
     csp.nb_assigned += 1
 
-    if csp.param["look-ahead"]["AC3"] : 
-        ac3(csp, level)
-
-    if csp.param["look-ahead"]["AC4"] : 
-        ac4(csp, level)
-
     # try values affections
     values_order = csp.select_values(varId, level)
     for value in values_order:
         csp.assignments[varId] = value
-        #csp.vars[varId].assignment = value
+        # csp.vars[varId].assignment = value
 
         contradiction = False
 
@@ -87,7 +83,7 @@ def backtracking(csp: CSP.CSP, level: int) -> bool:
             if backtracking(csp, level + 1):
                 return True
             # else contradiction found further down the tree, so try another value
-            #print("backtracking from value {} for variable {}".format(csp.assignments[varId], var.name))
+            # print("backtracking from value {} for variable {}".format(csp.assignments[varId], var.name))
 
         # A contradiction was found, reset domains and try a different value
         for var_to_update in csp.vars:
@@ -96,7 +92,7 @@ def backtracking(csp: CSP.CSP, level: int) -> bool:
     # All values for selected variable lead to a contradiction, current partial assignment is not feasible
     var.level = -1
     csp.assignments[varId] = None
-    #csp.vars[varId].assignment = None
+    # csp.vars[varId].assignment = None
     csp.nb_assigned -= 1
 
     return False
