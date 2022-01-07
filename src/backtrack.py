@@ -7,13 +7,10 @@ from arc_consistency import ac3, ac4
 
 def forward_checking(csp: CSP.CSP, level: int, varId, var) -> bool:
     # Forward-checking
-    contradiction = False
     for c in csp.all_associated_constrs(varId):
-        contradiction = not c.propagate_assignment(var, csp.assignments, level)
-        # contradiction = True if constraint c cannot be verified for current assignment
-        if contradiction:
-            break
-    return contradiction
+        if not c.propagate_assignment(var, csp.assignments, level):
+            return True
+    return False
 
 
 def bt(csp: CSP.CSP, varId) -> bool:

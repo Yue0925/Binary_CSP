@@ -30,7 +30,7 @@ class Constraint(object):
         """ Return True if the given assigned values are satisfied by current constraint, False otherwise. """
         raise NotImplemented()
 
-    def propagate_assignment(self, assigned_var:Variable.Variable, assignments: list, level:int):
+    def propagate_assignment(self, assigned_var: Variable.Variable, assignments: list, level: int):
         """After one of its constraints was assigned a value, eliminated infeasible values from the second one's domain
 
         Args:
@@ -45,7 +45,7 @@ class Constraint(object):
 
 
 class ConstraintBinary(Constraint):
-    def __init__(self, id: int, var1:Variable.Variable, var2:Variable.Variable):
+    def __init__(self, id: int, var1: Variable.Variable, var2: Variable.Variable):
         """Initializes a constraint.
 
         Args:
@@ -74,7 +74,7 @@ class ConstraintBinary(Constraint):
         """
         raise NotImplemented()
 
-    def propagate_assignment(self, assigned_var:Variable.Variable, assignments: list, level:int):
+    def propagate_assignment(self, assigned_var: Variable.Variable, assignments: list, level: int):
         """After one of its constraints was assigned a value, eliminated infeasible values from the second one's domain
 
         Args:
