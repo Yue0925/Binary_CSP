@@ -15,10 +15,10 @@ class Variable(object):
         self.domMax = domMax
         self._dom = list(range(domMin, domMax + 1))  # domaine énumérée, l'ens élément finis
         self.dom_size = len(self._dom)
-        # self.domFun = domFun # domaine définie par une fonction
+        # self.domFun = domFun  # domaine defini par une fonction
         self.level = -1
         self.current_dom_size = None
-        #self.assignment = None
+        # self.assignment = None
         self.associated_constrs = None
 
     def __repr__(self):
@@ -33,7 +33,7 @@ class Variable(object):
         Returns:
             (list): list of all remaining possible values at given level
         """
-        #if not self.assignment is None:
+        # if not self.assignment is None:
         #    return [self.assignment]
         if level == -1:
             return self._dom[:]

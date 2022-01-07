@@ -5,23 +5,20 @@ from CSP import *
 import os
 
 
-def constr_coloring(x: int, y: int, a: int, b: int):
-    return a != b
-
 def lecture(path: str):
-    if not os.path.exists(path): raise Exception("The input file {} doesn't exisist !".format(path))
+    if not os.path.exists(path): raise Exception("The input file {} doesn't exist !".format(path))
     print("Reading file {}".format(path))
     matrixIncidency = None 
     edges = 0
 
     with open(path, 'r') as file:
         for line in file.readlines():
-            if line[0] == 'c': # comments
+            if line[0] == 'c':  # comments
                 continue
-            if line[0] == 'p': # graph size
+            if line[0] == 'p':  # graph size
                 nodes = int(line.split()[2])
                 matrixIncidency = [[False for _ in range(nodes)] for _ in range(nodes)] 
-            if line[0] == 'e' : # we only consider the simple undirected graph
+            if line[0] == 'e':  # we only consider the simple undirected graph
                 u = int(line.split()[1])-1
                 v = int(line.split()[2])-1
                 if not matrixIncidency[u][v]:
@@ -33,13 +30,13 @@ def lecture(path: str):
 
 
 def solve_coloring(path: str, upperB=0):
-    """ Solve the (simple undirected) graph coloring problem with a defaut given chromatic number. """
+    """ Solve the (simple undirected) graph coloring problem with a default given chromatic number. """
     matrix, nodes, edges = lecture(path)
 
-    if upperB==0:
-        upperB = max(list(map(sum, matrix))) + 1 # set upper bound as the maximum degree + 1
+    if upperB == 0:
+        upperB = max(list(map(sum, matrix))) + 1  # set upper bound as the maximum degree + 1
 
-    # modelization
+    # mobilization
     csp_solver = CSP()
 
     # variables
@@ -50,13 +47,12 @@ def solve_coloring(path: str, upperB=0):
     # constraints
     for u in range(nodes-1):
         for v in range(u+1, nodes):
-            if matrix[u][v]: # if u, v are adjacent
-                # csp_solver.add_constraint_enum(u, v, constr_coloring)
+            if matrix[u][v]:  # if u, v are adjacent
                 csp_solver.add_constraint(x[u] != x[v])
 
     # parameters setting
-    #csp_solver.set_AC3()
-    #csp_solver.set_BT()
+    # csp_solver.set_AC3()
+    # csp_solver.set_BT()
     csp_solver.set_AC4()
     csp_solver.set_FC()
 
@@ -73,10 +69,8 @@ def solve_coloring(path: str, upperB=0):
     return nodes, edges, isFeasible, csp_solver.exploredNodes, csp_solver.exploreTime
 
 
-
-
 if __name__ == "__main__":
-    chromaticsKnown = { "myciel3.col": 4, "myciel4.col": 5 }
+    chromaticsKnown = {"myciel3.col": 4, "myciel4.col": 5}
     # , "myciel5.col": 6, "myciel6.col": 7, "myciel7.col": 8,
     #     "anna.col" : 11, "david.col": 11, "homer.col": 13, "le450_15b.col": 15, "huck.col": 11, "jean.col": 10,
     #     "games120.col" : 9, "miles250.col": 8, "queen7_7.col": 7, "queen11_11.col": 11, "miles500.col": 20,

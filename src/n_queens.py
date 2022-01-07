@@ -3,6 +3,7 @@
 
 from CSP import *
 
+
 def constr_nqueens(x: int, y: int, a: int, b: int):
     return abs(x - y) != abs(a - b)
 

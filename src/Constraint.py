@@ -30,7 +30,7 @@ class Constraint(object):
         """ Return True if the given assigned values are satisfied by current constraint, False otherwise. """
         raise NotImplemented()
 
-    def propagate_assignment(self, assigned_var:Variable.Variable, assignments: list, level:int):
+    def propagate_assignment(self, assigned_var: Variable.Variable, assignments: list, level: int):
         """After one of its constraints was assigned a value, eliminated infeasible values from the second one's domain
 
         Args:
@@ -45,7 +45,7 @@ class Constraint(object):
 
 
 class ConstraintBinary(Constraint):
-    def __init__(self, id: int, var1:Variable.Variable, var2:Variable.Variable):
+    def __init__(self, id: int, var1: Variable.Variable, var2: Variable.Variable):
         """Initializes a constraint.
 
         Args:
@@ -74,7 +74,7 @@ class ConstraintBinary(Constraint):
         """
         raise NotImplemented()
 
-    def propagate_assignment(self, assigned_var:Variable.Variable, assignments: list, level:int):
+    def propagate_assignment(self, assigned_var: Variable.Variable, assignments: list, level: int):
         """After one of its constraints was assigned a value, eliminated infeasible values from the second one's domain
 
         Args:
@@ -129,7 +129,7 @@ class ConstraintEnum(ConstraintBinary):
         """
         super().__init__(id, var1, var2)
 
-        self.feasibleTuples = set()  # l'ensemble couples admissibles
+        self.feasibleTuples = set()  # set of feasible values
         for a in var1.dom(-1):
             for b in var2.dom(-1):
                 if feasibility_fun is None:
@@ -199,12 +199,15 @@ class ConstraintLinear(ConstraintBinary):
         if assignments[assigned_var.id] is None:
             raise ValueError("Variable {} should have an assigned value".format(assigned_var.name))
 
+        if self.coef1 == 0 or self.coef2 == 0:
+            raise ValueError("Unary constraints not supported, modify variable's domain instead")
+
         if assigned_var.id == self.var1.id:
-            updated_rhs = (self.rhs - self.coef1 * assignments[assigned_var.id]) / self.coef2  # TODO: gerer le cas coef=0 ailleurs
+            updated_rhs = (self.rhs - self.coef1 * assignments[assigned_var.id]) / self.coef2
             var_to_check = self.var2
 
         elif assigned_var.id == self.var2.id:
-            updated_rhs = (self.rhs - self.coef2 * assignments[assigned_var.id]) / self.coef1  # TODO: gerer le cas coef=0 ailleurs
+            updated_rhs = (self.rhs - self.coef2 * assignments[assigned_var.id]) / self.coef1
             var_to_check = self.var1
 
         else:
