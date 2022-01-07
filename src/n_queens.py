@@ -7,6 +7,8 @@ def constr_nqueens(x: int, y: int, a: int, b: int):
     # return (a != b) and (abs(x - y) != abs(a - b))
     return abs(x - y) != abs(a - b)
 
+def verification(assignment: list):
+    pass
 
 def display_sol_nqueens(csp: CSP, N: int):
     """ Display the solution information of n-Queens problem solved by CSP solver. """
@@ -81,7 +83,7 @@ def benchmarking():
             t = []
             n = []
 
-            for N in [ *list(range(5, 15, 5)), *range(10, 50, 500) ]: #TODO : à corriger
+            for N in [ *range(5, 20), *range(20, 50, 500) ]: #TODO : à corriger(pour l'instant petits instances)
                exploredNodes, exploreTime, isFeasible = solve_nqueens(N, [compo1, compo2])
                if isFeasible:
                     sizes.append(N)
@@ -92,6 +94,8 @@ def benchmarking():
             usedTimes[method] = t
             nodes[method] = n
     
+    plt.xscale("log")
+    plt.yscale("log")
     # generate picture times
     for method in instances.keys():
         plt.plot(instances[method], usedTimes[method], label = method)
@@ -106,7 +110,7 @@ def benchmarking():
     for method in instances.keys():
         plt.plot(instances[method], nodes[method], label = method)
 
-    plt.legend()
+    #plt.legend()
     plt.title("Comparison of explored nodes between look-ahead methods on N-Queens")
     plt.xlabel("Number of queens")
     plt.ylabel("Number of nodes explored")

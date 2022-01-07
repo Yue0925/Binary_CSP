@@ -1,5 +1,3 @@
-from typing import Counter
-from Constraint import ConstraintBinary
 
 
 def ac3(csp, level=0):
