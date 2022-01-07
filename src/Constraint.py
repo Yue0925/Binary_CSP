@@ -236,7 +236,7 @@ class ConstraintAllDiff(Constraint):
         contradiction = False
 
         for var_to_check in self.vars:
-            if var_to_check.id == assigned_var.id:
+            if assignments[var_to_check.id] is not None:
                 continue
 
             if assignments[assigned_var.id] in var_to_check.dom(level + 1):
