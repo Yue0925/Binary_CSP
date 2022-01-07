@@ -119,7 +119,7 @@ if __name__ == "__main__":
     #import timeit
     #print(timeit.timeit("solve_nqueens(10)", globals=locals()))
 
-    solve_nqueens(23, settings=["FC"])
-    # benchmarking()
+    # solve_nqueens(23, settings=["FC"])
+    benchmarking()
 
 
