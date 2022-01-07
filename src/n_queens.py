@@ -197,9 +197,9 @@ def benchmarking_heuristics(selections: list, heurictics: str):
 if __name__ == "__main__":
     # import timeit
     # print(timeit.timeit("solve_nqueens(10)", globals=locals()))
-
-    #solve_nqueens(15, settings=["MAC4"])
+    #for i in range(5, 10):
+        #solve_nqueens(15, settings=["MAC4"])
     benchmarking_consistency()
 
-    for (s, h) in [(VARIABLES_SELECTION, "variables"), (VALUES_SELECTION, "values")]:
-        benchmarking_heuristics(s, h)
+    # for (s, h) in [(VARIABLES_SELECTION, "variables"), (VALUES_SELECTION, "values")]:
+    #     benchmarking_heuristics(s, h)
