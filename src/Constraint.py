@@ -199,12 +199,15 @@ class ConstraintLinear(ConstraintBinary):
         if assignments[assigned_var.id] is None:
             raise ValueError("Variable {} should have an assigned value".format(assigned_var.name))
 
+        if self.coef1 == 0 or self.coef2 == 0:
+            raise ValueError("Unary constraints not supported, modify variable's domain instead")
+
         if assigned_var.id == self.var1.id:
-            updated_rhs = (self.rhs - self.coef1 * assignments[assigned_var.id]) / self.coef2  # TODO: gerer le cas coef=0 ailleurs
+            updated_rhs = (self.rhs - self.coef1 * assignments[assigned_var.id]) / self.coef2
             var_to_check = self.var2
 
         elif assigned_var.id == self.var2.id:
-            updated_rhs = (self.rhs - self.coef2 * assignments[assigned_var.id]) / self.coef1  # TODO: gerer le cas coef=0 ailleurs
+            updated_rhs = (self.rhs - self.coef2 * assignments[assigned_var.id]) / self.coef1
             var_to_check = self.var1
 
         else:
