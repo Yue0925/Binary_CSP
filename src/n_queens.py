@@ -5,7 +5,6 @@ from CSP import *
 
 
 def constr_nqueens(x: int, y: int, a: int, b: int):
-    # return (a != b) and (abs(x - y) != abs(a - b))
     return abs(x - y) != abs(a - b)
 
 
@@ -39,7 +38,7 @@ def solve_nqueens(N: int, settings=None):
     for i in range(N-1):
         for j in range(i+1, N):
             csp_solver.add_constraint_enum(i, j, constr_nqueens)
-            # csp_solver.add_constraint(x[i] - x[j] != j - i)
+            # csp_solver.add_constraint(x[i] - x[j] != j - i)  # Using 2 constraints is slightly less efficient
             # csp_solver.add_constraint(x[j] - x[i] != j - i)
     csp_solver.add_all_diff(x)
 

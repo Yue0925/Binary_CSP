@@ -5,10 +5,6 @@ from CSP import *
 import os
 
 
-def constr_coloring(x: int, y: int, a: int, b: int):
-    return a != b
-
-
 def lecture(path: str):
     if not os.path.exists(path): raise Exception("The input file {} doesn't exist !".format(path))
     print("Reading file {}".format(path))
@@ -38,7 +34,7 @@ def solve_coloring(path: str, upperB=0):
     matrix, nodes, edges = lecture(path)
 
     if upperB == 0:
-        upperB = max(list(map(sum, matrix))) + 1 # set upper bound as the maximum degree + 1
+        upperB = max(list(map(sum, matrix))) + 1  # set upper bound as the maximum degree + 1
 
     # mobilization
     csp_solver = CSP()
@@ -51,8 +47,7 @@ def solve_coloring(path: str, upperB=0):
     # constraints
     for u in range(nodes-1):
         for v in range(u+1, nodes):
-            if matrix[u][v]: # if u, v are adjacent
-                # csp_solver.add_constraint_enum(u, v, constr_coloring)
+            if matrix[u][v]:  # if u, v are adjacent
                 csp_solver.add_constraint(x[u] != x[v])
 
     # parameters setting
