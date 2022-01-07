@@ -1,3 +1,5 @@
+from operator import itemgetter
+
 import Variable
 
 
@@ -17,6 +19,12 @@ class Constraint(object):
 
     def __repr__(self):
         pass
+
+    def contains_var(self, varId: int):
+        raise NotImplemented
+
+    def is_assigned(self, assignments):
+        raise NotImplemented
 
     def is_feasible(self, values: list):
         """ Return True if the given assigned values are satisfied by current constraint, False otherwise. """
@@ -51,6 +59,12 @@ class ConstraintBinary(Constraint):
 
     def __repr__(self):
         return "constraint {0} : ({1}, {2})".format(self.id, self.var1.name, self.var2.name)
+
+    def contains_var(self, varId: int):
+        return self.var1.id == varId or self.var2.id == varId
+
+    def is_assigned(self, assignments):
+        return assignments[self.var1.id] is not None and assignments[self.var2.id] is not None
 
     def reverse(self):
         """Returns a copied constraint where first and second variable roles are inversed
@@ -218,9 +232,24 @@ class ConstraintAllDiff(Constraint):
     def __init__(self, id: int, vars):
         super().__init__(id)
         self.vars = vars
+        self.vars_ids = dict.fromkeys([var.id for var in vars])
 
     def __repr__(self):
         return "constraint {0} : ({1})".format(self.id, [var.name for var in self.vars])
+
+    def contains_var(self, varId: int):
+        return varId in self.vars_ids
+
+    def is_assigned(self, assignments):
+        nb_assigned = 0
+
+        for varId in self.vars_ids:
+            if assignments[varId] is not None:
+                nb_assigned += 1
+
+                if nb_assigned >= 2:
+                    return True
+        return False
 
     def is_feasible(self, values):
         if len(self.vars) != len(values):

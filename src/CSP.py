@@ -227,24 +227,19 @@ class CSP(object):
 
     def all_associated_constrs(self, varId: int):
         """ Return all constraints containing the given variable. """
-        return list(filter(
-            lambda c:
-                c.var1.id == varId or c.var2.id == varId if isinstance(c, ConstraintBinary)
-                else varId in [var.id for var in c.vars],
-            self.constrs
-        ))
+        if self.vars[varId].associated_constrs is None:
+            self.vars[varId].associated_constrs = list(filter(
+                lambda c: c.contains_var(varId),
+                self.constrs
+            ))
+        return self.vars[varId].associated_constrs
 
     def all_associated_assigned_constrs(self, varId: int):
         """ Return all constraints containing the given variable, and the other variable is also assigned. """
         return list(filter(
-            lambda c:
-                not (self.assignments[c.var1.id] is None or self.assignments[c.var2.id] is None) if isinstance(c, ConstraintBinary)
-                else len([0 for var in c.vars if self.assignments[var.id] is not None]) >= 2,
+            lambda c: c.is_assigned(self.assignments),
             self.all_associated_constrs(varId)
         ))
-
-    def vars_allDiff(self):
-        pass
 
     def display(self):
         for c in self.constrs:
@@ -267,6 +262,7 @@ class CSP(object):
 
         for var in self.vars:
             var.current_dom_size = var.dom_size * np.ones(self.nbVars + 1, dtype=int)
+            var.associated_constrs = None
 
         # Actual solve
         if self.param["look-ahead"]["MAC3"] or self.param["look-ahead"]["AC3"]: 

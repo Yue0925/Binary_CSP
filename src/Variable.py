@@ -19,6 +19,7 @@ class Variable(object):
         self.level = -1
         self.current_dom_size = None
         #self.assignment = None
+        self.associated_constrs = None
 
     def __repr__(self):
         return "variable {}".format(self.name)
