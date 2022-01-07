@@ -201,5 +201,5 @@ if __name__ == "__main__":
     #solve_nqueens(15, settings=["MAC4"])
     benchmarking_consistency()
 
-    # for (s, h) in [(VARIABLES_SELECTION, "variables"), (VALUES_SELECTION, "values")]:
-    #     benchmarking_heuristics(s, h)
+    for (s, h) in [(VARIABLES_SELECTION, "variables"), (VALUES_SELECTION, "values")]:
+        benchmarking_heuristics(s, h)
