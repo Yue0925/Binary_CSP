@@ -45,8 +45,8 @@ class Variable(object):
                 to_remove = i
                 break
 
-        # if to_remove == -1:
-        #     raise ValueError("Value {} not found in variable {}'s domain at level {}".format(value, self.name, level))
+        if to_remove == -1:
+            raise ValueError("Value {} not found in variable {}'s domain at level {}".format(value, self.name, level))
         self._dom[to_remove], self._dom[last] = self._dom[last], self._dom[to_remove]
         self.current_dom_size[level] -= 1
 
