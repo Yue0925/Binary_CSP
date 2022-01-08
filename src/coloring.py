@@ -67,8 +67,8 @@ def solve_coloring(path: str, colors):
     csp_solver.set_AC4()
     csp_solver.set_FC()
 
-    csp_solver.set_variable_selection(3)
-    csp_solver.set_value_selection(3)
+    csp_solver.set_variable_selection(1)
+    csp_solver.set_value_selection(1)
 
     # solve
     isFeasible = csp_solver.solve()
@@ -125,7 +125,7 @@ if __name__ == "__main__":
 
         for instance in chromaticsKnown.items():
             nodes, edges, isFeasible, exploredNodes, exploreTime, timeOut = solve_coloring(directory + instance[0], instance[1])
-            f.write("{} & {} & {} & {} & ".format(instance[0], nodes, edges, instance[1]))
+            f.write(r"{} & {} & {} & {} & ".format(instance[0], nodes, edges, instance[1]))
             if isFeasible:
                 f.write("Y & ")
             elif timeOut:

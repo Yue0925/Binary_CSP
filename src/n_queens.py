@@ -36,7 +36,7 @@ def display_sol_nqueens(csp: CSP, N: int):
     print("Sol is feasible ? {}".format(csp.isFeasible))
     
 
-def solve_nqueens(N: int, settings=None, varOpt=3, valOpt=3):
+def solve_nqueens(N: int, settings=None, varOpt=1, valOpt=1):
     # modelization
     csp_solver = CSP()
 
@@ -130,7 +130,6 @@ def benchmarking_consistency():
     plt.xlabel("Number of queens")
     plt.ylabel("Time(s)")
     plt.savefig('../results/N-Queens_impact_consistent_times.png')
-    plt.show()
     plt.close()
 
     # generate picture nodes
@@ -144,7 +143,6 @@ def benchmarking_consistency():
     plt.xlabel("Number of queens")
     plt.ylabel("Number of nodes explored")
     plt.savefig('../results/N-Queens_impact_consistent_nodes.png')
-    plt.show()
     plt.close()
 
 
@@ -195,7 +193,6 @@ def benchmarking_heuristics(selections: list, heurictics: str):
     plt.xlabel("Number of queens")
     plt.ylabel("Time(s)")
     plt.savefig('../results/N-Queens_{}_heuristics_times.png'.format(heurictics))
-    plt.show()
     plt.close()
 
     # generate picture nodes
@@ -209,7 +206,6 @@ def benchmarking_heuristics(selections: list, heurictics: str):
     plt.xlabel("Number of queens")
     plt.ylabel("Number of nodes explored")
     plt.savefig('../results/N-Queens_{}_heuristics_nodes.png'.format(heurictics))
-    plt.show()
     plt.close()
 
 
