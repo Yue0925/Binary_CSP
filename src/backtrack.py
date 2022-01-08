@@ -76,8 +76,10 @@ def backtracking(csp: CSP.CSP, level: int) -> bool:
     # try values affections
     values_order = csp.select_values(varId, level)
     for value in values_order:
+        if value not in var.dom(level): # if the value was removed
+            continue
+        # print("affection val{} to {} dom {} ".format(value, var.name, var.dom(level)))
         csp.assignments[varId] = value
-        var.remove_all_values_except(value, level)
 
         contradiction = False
 
@@ -94,15 +96,11 @@ def backtracking(csp: CSP.CSP, level: int) -> bool:
 
         # A contradiction was found, reset domains and try a different value
         for var_to_update in csp.vars:
-            if var_to_update.id == var.id :
-                var_to_update.current_dom_size[level] = var_to_update.current_dom_size[level - 1]
-            else :
-                var_to_update.current_dom_size[level + 1] = var_to_update.current_dom_size[level]
+            var_to_update.current_dom_size[level + 1] = var_to_update.current_dom_size[level]
 
     # All values for selected variable lead to a contradiction, current partial assignment is not feasible
     var.level = -1
     csp.assignments[varId] = None
-    # csp.vars[varId].assignment = None
     csp.nb_assigned -= 1
 
     return False

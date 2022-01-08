@@ -22,20 +22,28 @@ def ac3(csp, level=0):
         x = c_xy.var1
         y = c_xy.var2
 
-        values = x.dom(level)
-        for a in values:
+        if csp.assignments[x.id] is None:
+            values = x.dom(level)
+        else: values = [csp.assignments[x.id]]
 
+        for a in values:
             supported = False
-            for b in y.dom(level):
+
+            if csp.assignments[y.id] is None:
+                valuesB = y.dom(level)
+            else: valuesB = [csp.assignments[y.id]]
+
+            for b in valuesB:
                 if c_xy.is_feasible([a, b]):
                     supported = True
                     break
 
             if not supported:
+                # print("ac3 remove {} of {} from {}".format(a, x.name, x.dom(level)))
                 x.remove_value(a, level)
 
                 for c_zx in constrs:
-                    if c_zx.var2 == x and c_zx.var1 != y:
+                    if c_zx.var2.id == x.id and c_zx.var1.id != y.id:
                         if c_zx not in to_test:
                             to_test.append(c_zx)
 
@@ -56,11 +64,17 @@ def init_ac4(csp, level=0):
             continue
         x = c.var1
         y = c.var2
-        values = x.dom(level)
+        if csp.assignments[x.id] is None:
+            values = x.dom(level)
+        else: values = [csp.assignments[x.id]]
 
         for a in values:
             total = 0
-            for b in y.dom(level):
+            if csp.assignments[y.id] is None:
+                valuesB = y.dom(level)
+            else: valuesB = [csp.assignments[y.id]]
+
+            for b in valuesB:
                 if c.is_feasible([a, b]):
                     total += 1
                     l = supporters[(y.id, b)]
