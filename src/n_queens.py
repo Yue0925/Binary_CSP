@@ -2,6 +2,8 @@
 # -*- coding: utf-8 -*-
 
 from CSP import *
+import matplotlib.pyplot as plt
+
 
 
 def constr_nqueens(x: int, y: int, a: int, b: int):
@@ -34,7 +36,7 @@ def display_sol_nqueens(csp: CSP, N: int):
     print("Sol is feasible ? {}".format(csp.isFeasible))
     
 
-def solve_nqueens(N: int, settings=None):
+def solve_nqueens(N: int, settings=None, varOpt=3, valOpt=3):
     # modelization
     csp_solver = CSP()
 
@@ -70,8 +72,8 @@ def solve_nqueens(N: int, settings=None):
             if param == "AC4":
                 csp_solver.set_AC4()
 
-    csp_solver.set_variable_selection(3)
-    csp_solver.set_value_selection(3)
+    csp_solver.set_variable_selection(varOpt)
+    csp_solver.set_value_selection(valOpt)  
 
     isFeasible = csp_solver.solve()
     display_sol_nqueens(csp_solver, N)
@@ -83,8 +85,6 @@ def solve_nqueens(N: int, settings=None):
 
 
 def benchmarking_consistency():
-    import matplotlib.pyplot as plt
-
     instances = dict()  # algo (string) => instance size (list)
     usedTimes = dict()  # algo (string) => times (list)
     nodes = dict()  # algo (string) => nb nodes (list)
@@ -130,26 +130,38 @@ def benchmarking_consistency():
     plt.xlabel("Number of queens")
     plt.ylabel("Time(s)")
     plt.savefig('../results/N-Queens_impact_consistent_times.png')
+    plt.show()
+    plt.close()
 
     # generate picture nodes
     for method in instances.keys():
         plt.plot(instances[method], nodes[method], label = method)
 
+    plt.legend()
+    plt.yscale("log")
+    plt.xscale("log")
     plt.title("Comparison of explored nodes between look-ahead methods on N-Queens")
     plt.xlabel("Number of queens")
     plt.ylabel("Number of nodes explored")
     plt.savefig('../results/N-Queens_impact_consistent_nodes.png')
+    plt.show()
+    plt.close()
 
 
 
 def benchmarking_heuristics(selections: list, heurictics: str):
-    import matplotlib.pyplot as plt
-
     select = dict()  # variable selection (string) => instance size (list)
     usedTimes = dict()  # variable selection (string) => times (list)
     nodes = dict()  # variable selection (string) => nb nodes (list)
 
     for option in range(len(selections)):
+        if heurictics == "variables":
+            varOpt = option
+        else: varOpt = 0
+
+        if heurictics == "values":
+            valOpt = option
+        else: valOpt = 0
         
         method = selections[option]
         sizes = []
@@ -157,7 +169,7 @@ def benchmarking_heuristics(selections: list, heurictics: str):
         n = []
 
         for N in [*list(range(5, 20)), *range(20, 50, 5)]: 
-            exploredNodes, exploreTime, isFeasible, timeOut = solve_nqueens(N, ["FC", "AC4"])
+            exploredNodes, exploreTime, isFeasible, timeOut = solve_nqueens(N, ["FC", "AC4"], varOpt, valOpt)
             if isFeasible:
                 sizes.append(N)
                 t.append(exploreTime)
@@ -183,23 +195,30 @@ def benchmarking_heuristics(selections: list, heurictics: str):
     plt.xlabel("Number of queens")
     plt.ylabel("Time(s)")
     plt.savefig('../results/N-Queens_{}_heuristics_times.png'.format(heurictics))
+    plt.show()
+    plt.close()
 
     # generate picture nodes
     for method in select.keys():
         plt.plot(select[method], nodes[method], label = method)
 
+    plt.legend()
+    plt.yscale("log")
+    plt.xscale("log")
     plt.title("Comparison of explored nodes between variables order heuristics on N-Queens")
     plt.xlabel("Number of queens")
     plt.ylabel("Number of nodes explored")
     plt.savefig('../results/N-Queens_{}_heuristics_nodes.png'.format(heurictics))
+    plt.show()
+    plt.close()
 
 
 if __name__ == "__main__":
     # import timeit
     # print(timeit.timeit("solve_nqueens(10)", globals=locals()))
     #for i in range(5, 10):
-        #solve_nqueens(15, settings=["MAC4"])
-    # benchmarking_consistency()
+        # solve_nqueens(15, settings=["MAC4"])
+    benchmarking_consistency()
 
     for (s, h) in [(VARIABLES_SELECTION, "variables"), (VALUES_SELECTION, "values")]:
         benchmarking_heuristics(s, h)

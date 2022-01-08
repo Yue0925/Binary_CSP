@@ -21,17 +21,22 @@ def ac3(csp, level=0):
         c_xy = to_test.pop()
         x = c_xy.var1
         y = c_xy.var2
+        values = []
 
         if csp.assignments[x.id] is None:
             values = x.dom(level)
-        else: values = [csp.assignments[x.id]]
+        else: 
+            if csp.assignments[x.id] in x.dom(level):
+                values = [csp.assignments[x.id]]
 
         for a in values:
             supported = False
-
+            valuesB = []
             if csp.assignments[y.id] is None:
                 valuesB = y.dom(level)
-            else: valuesB = [csp.assignments[y.id]]
+            else: 
+                if csp.assignments[y.id] in y.dom(level):
+                    valuesB = [csp.assignments[y.id]]
 
             for b in valuesB:
                 if c_xy.is_feasible([a, b]):
@@ -64,15 +69,21 @@ def init_ac4(csp, level=0):
             continue
         x = c.var1
         y = c.var2
+        values = []
         if csp.assignments[x.id] is None:
             values = x.dom(level)
-        else: values = [csp.assignments[x.id]]
+        else: 
+            if csp.assignments[x.id] in x.dom(level):
+                values = [csp.assignments[x.id]]
 
         for a in values:
             total = 0
+            valuesB = []
             if csp.assignments[y.id] is None:
                 valuesB = y.dom(level)
-            else: valuesB = [csp.assignments[y.id]]
+            else: 
+                if csp.assignments[y.id] in y.dom(level):
+                    valuesB = [csp.assignments[y.id]]
 
             for b in valuesB:
                 if c.is_feasible([a, b]):
