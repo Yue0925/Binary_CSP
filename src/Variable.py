@@ -50,13 +50,18 @@ class Variable(object):
         self._dom[to_remove], self._dom[last] = self._dom[last], self._dom[to_remove]
         self.current_dom_size[level] -= 1
 
-    # def remove_all_values_except(self, value:int, level:int): #TODO: au niveau de complexité, on préfère de n'utiliser pas
-    #     values = self.dom(level)
-    #     for v in values:
-    #         if v == value:
-    #             continue
-    #         else:
-    #             self.remove_value(v, level)
+    def remove_all_values_except(self, value: int, level: int):
+        last = self.current_dom_size[level] - 1
+        to_keep = -1
+        for i in range(last + 1):
+            if self._dom[i] == value:
+                to_keep = i
+                break
+
+        if to_keep == -1:
+            raise ValueError("Value {} not found in variable {}'s domain at level {}".format(value, self.name, level))
+        self._dom[to_keep], self._dom[0] = self._dom[0], self._dom[to_keep]
+        self.current_dom_size[level] = 1
 
     def __add__(self, other):
         return LinearExpr(var1=self, coef1=1) + other

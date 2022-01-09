@@ -270,6 +270,8 @@ class CSP(object):
         from arc_consistency import ac3, ac4
 
         # setup
+        self.isFeasible = True
+
         self.assignments = [None for _ in range(self.nbVars)]
         self.nb_assigned = 0
 
@@ -279,9 +281,11 @@ class CSP(object):
 
         # Actual solve
         if self.param["root"]["AC3"]: 
-            ac3(self)
+            self.isFeasible = ac3(self)
         elif self.param["root"]["AC4"]: 
-            ac4(self)
+            self.isFeasible = ac4(self)
+        if not self.isFeasible:
+            return False
         
         self.__init_matrix_incidence_supported_values_counter()
         # print("supportedValCount : {}. ".format(self.supportedValCount))

@@ -10,8 +10,8 @@ def forward_checking(csp: CSP.CSP, level: int, varId, var) -> bool:
     # Forward-checking
     for c in csp.all_associated_constrs(varId):
         if not c.propagate_assignment(var, csp.assignments, level):
-            return True
-    return False
+            return False
+    return True
 
 
 def bt(csp: CSP.CSP, varId) -> bool:
@@ -24,8 +24,8 @@ def bt(csp: CSP.CSP, varId) -> bool:
             feasible = c.is_feasible([csp.assignments[var.id] for var in c.vars])
 
         if not feasible:
-            return True
-    return False
+            return False
+    return True
 
 
 def backtracking(csp: CSP.CSP, level: int) -> bool:
@@ -60,12 +60,6 @@ def backtracking(csp: CSP.CSP, level: int) -> bool:
     for var_to_update in csp.vars:
         var_to_update.current_dom_size[level + 1] = var_to_update.current_dom_size[level]
 
-    if csp.param["look-ahead"]["MAC3"] : 
-        ac3(csp, level)
-
-    if csp.param["look-ahead"]["MAC4"] : 
-        ac4(csp, level)
-
     # pick up a variable
     varId = csp.select_unassigned_varId(level)
     var = csp.vars[varId]
@@ -76,17 +70,22 @@ def backtracking(csp: CSP.CSP, level: int) -> bool:
     # try values affections
     values_order = csp.select_values(varId, level)
     for value in values_order:
-        if value not in var.dom(level): # if the value was removed
+        if value not in var.dom(level):  # if the value was removed
             continue
-        # print("affection val{} to {} dom {} ".format(value, var.name, var.dom(level)))
+        # print("affecting val{} to {} dom {} ".format(value, var.name, var.dom(level + 1)))
         csp.assignments[varId] = value
+        var.remove_all_values_except(value, level + 1)
 
         contradiction = False
 
         if csp.param["look-ahead"]["BT"]:
-            contradiction = bt(csp, varId)
+            contradiction = not bt(csp, varId)
         elif csp.param["look-ahead"]["FC"]:
-            contradiction = forward_checking(csp, level, varId, var)
+            contradiction = not forward_checking(csp, level, varId, var)
+        elif csp.param["look-ahead"]["MAC3"]:
+            contradiction = not ac3(csp, level)
+        elif csp.param["look-ahead"]["MAC4"]:
+            contradiction = not ac4(csp, level)
 
         if not contradiction:
             if backtracking(csp, level + 1):
