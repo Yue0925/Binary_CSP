@@ -86,11 +86,11 @@ class CSP(object):
     
     def set_MAC3(self):
         self.param["look-ahead"].update({"MAC3": True})
-        self.param["look-ahead"].update({"BT": True})
+        #self.param["look-ahead"].update({"BT": True})
 
     def set_MAC4(self):
         self.param["look-ahead"].update({"MAC4": True})
-        self.param["look-ahead"].update({"BT": True})
+        #self.param["look-ahead"].update({"BT": True})
 
     def __init_matrix_incidence_supported_values_counter(self):
         """ Initialize a binary incidence matrix such that mat[var1][var2] = True if var1 and var2 are linked by a
